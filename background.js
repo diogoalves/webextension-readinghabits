@@ -4,26 +4,21 @@ let QUEUE_FOLDER_ID = null;
 let ARCHIVE_FOLDER_ID = null;
 
 const click = async () => {
-  const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
-  if(activeTab && isSupportedProtocol(activeTab.url)) {
-    const queue = await getQueueList();
-    foundBookmark = queue.find( e => e.url === activeTab.url);
-
+  const activeTab = await getActiveTab();
+  if(activeTab) {
+    foundBookmark = findInQueue(activeTab.url);
     if (foundBookmark) {
       browser.bookmarks.move(foundBookmark.id, {parentId: ARCHIVE_FOLDER_ID});
     } else {
       browser.bookmarks.create({parentId: QUEUE_FOLDER_ID, title: activeTab.title, url: activeTab.url});
     }
-    updateIcon(foundBookmark, activeTab);
-    updateStatistics();
   }
 }
 
 const update = async () => {
-  const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
-  if(activeTab && isSupportedProtocol(activeTab.url)) {
-    const queue = await getQueueList();
-    foundBookmark = queue.find( e => e.url === activeTab.url);
+  const activeTab = await getActiveTab();
+  if(activeTab) {
+    foundBookmark = findInQueue(activeTab.url);
     updateIcon(foundBookmark, activeTab);
   }
 }

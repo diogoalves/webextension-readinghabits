@@ -50,3 +50,17 @@ const getQueueList = async () => {
     return result.children;
   }
 }
+
+const getActiveTab = async () => {
+  const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
+  if(activeTab && isSupportedProtocol(activeTab.url)) {
+    return activeTab;
+  } else {
+    return null;
+  }
+}
+
+const findInQueue = async url => {
+  const queue = await getQueueList();
+  return queue.find( e => e.url === url);
+}
