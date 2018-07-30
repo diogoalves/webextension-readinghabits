@@ -1,0 +1,26 @@
+{
+  "manifest_version": 2,
+  "name": "Reading habits",
+  "version": "0.1.0",
+  "description": "A simple reading habits extension",
+  "homepage_url": "https://github.com/diogoalves/webextension-readinghabits",
+  "icons": {
+    "48": "icons/bookmark-it.png",
+    "96": "icons/bookmark-it@2x.png"
+  },
+
+  "permissions": [
+    "bookmarks",
+    "tabs"
+  ],
+
+  "browser_action": {
+    "default_icon": "icons/star-empty-38.png",
+    "default_title": "Read it Later"
+  },
+
+  "background": {
+    "scripts": ["util.js", "statistics.js", "background.js"]
+  }
+
+}
