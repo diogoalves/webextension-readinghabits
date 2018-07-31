@@ -6,19 +6,20 @@ let ARCHIVE_FOLDER_ID = null;
 const click = async () => {
   const activeTab = await getActiveTab();
   if(activeTab) {
-    foundBookmark = findInQueue(activeTab.url);
-    if (foundBookmark) {
-      browser.bookmarks.move(foundBookmark.id, {parentId: ARCHIVE_FOLDER_ID});
-    } else {
-      browser.bookmarks.create({parentId: QUEUE_FOLDER_ID, title: activeTab.title, url: activeTab.url});
-    }
+    const foundBookmark = await findInQueue(activeTab.url);
+    const foundArchive = await findInArchive(activeTab.url);
+
+    if(foundBookmark && !foundArchive) browser.bookmarks.move(foundBookmark.id, {parentId: ARCHIVE_FOLDER_ID});
+    else if(foundBookmark && foundArchive) browser.bookmarks.remove(foundBookmark.id);
+    else if(!foundBookmark && foundArchive) browser.bookmarks.move(foundArchive.id, {parentId: QUEUE_FOLDER_ID});
+    else if(!foundBookmark && !foundArchive) browser.bookmarks.create({parentId: QUEUE_FOLDER_ID, title: activeTab.title, url: activeTab.url});
   }
 }
 
 const update = async () => {
   const activeTab = await getActiveTab();
   if(activeTab) {
-    foundBookmark = findInQueue(activeTab.url);
+    foundBookmark = await findInQueue(activeTab.url);
     updateIcon(foundBookmark, activeTab);
   }
 }
@@ -33,9 +34,7 @@ const init = () => {
   browser.tabs.onUpdated.addListener(update);
   browser.tabs.onActivated.addListener(update);
   browser.windows.onFocusChanged.addListener(update);
-
-  initQueueFolder();
-  initArchieveFolder(); 
+ 
   update();
 }
 
