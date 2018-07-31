@@ -9,7 +9,6 @@ let ACCUMULATED_PER_DAY = {};
 const statistics = {
   queuedToday: 0,
   archivedToday: 0,
-
 }
 
 const updateStatistics = async () => {
@@ -25,14 +24,6 @@ const updateStatistics = async () => {
   QUEUED_PER_DAY = perDay(queued.concat(archived));
   ARCHIVED_TODAY = perDay(archived);
   ACCUMULATED_PER_DAY = perDay(queued);
-
-  console.log(`QUEUED: ${TOTAL_QUEUED}, ARCHIVED: ${TOTAL_ARCHIVED}, QUEUED_TODAY: ${QUEUED_TODAY}, ARCHIVED_TODAY: ${ARCHIVED_TODAY}`);
-  console.log("QUEUED_PER_DAY")
-  console.log(QUEUED_PER_DAY)
-  console.log("ARCHIVED_TODAY")
-  console.log(ARCHIVED_TODAY)
-  console.log("ACCUMULATED_PER_DAY")
-  console.log(ACCUMULATED_PER_DAY)  
 }
 
 const perDay = data => {
