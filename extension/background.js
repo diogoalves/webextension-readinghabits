@@ -13,8 +13,6 @@ const click = async () => {
     else if(foundBookmark && foundArchive) await browser.bookmarks.remove(foundBookmark.id);
     else if(!foundBookmark && foundArchive) await browser.bookmarks.move(foundArchive.id, {parentId: QUEUE_FOLDER_ID});
     else if(!foundBookmark && !foundArchive) await browser.bookmarks.create({parentId: QUEUE_FOLDER_ID, title: activeTab.title, url: activeTab.url});
-
-    updateStatistics();
   }
 }
 
@@ -23,6 +21,7 @@ const update = async () => {
   if(activeTab) {
     foundBookmark = await findInQueue(activeTab.url);
     updateIcon(foundBookmark, activeTab);
+    console.log("entrou")
   }
 }
 
@@ -37,8 +36,11 @@ const init = () => {
   browser.tabs.onActivated.addListener(update);
   browser.windows.onFocusChanged.addListener(update);
  
+  
   update();
+  
 }
+console.log("entr2ou")
 
 
 init();

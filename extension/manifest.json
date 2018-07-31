@@ -19,8 +19,14 @@
     "default_title": "Read it Later"
   },
 
-  "background": {
-    "scripts": ["util.js", "statistics.js", "background.js"]
+  "browser_action": {
+    "browser_style": true,
+    "default_icon": {
+      "48": "images/Watermelon-48.png",
+      "96": "images/Watermelon-96.png"
+    },
+    "default_title": "React Example",
+    "default_popup": "popup.html"
   }
 
 }

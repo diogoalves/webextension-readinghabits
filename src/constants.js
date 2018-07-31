@@ -1,0 +1,2 @@
+export const QUEUE_FOLDER_NAME = 'READ IT LATER';
+export const ARCHIVE_FOLDER_NAME = 'ARCHIVED';

@@ -1,11 +1,13 @@
-const isSupportedProtocol = urlString => {
+import {QUEUE_FOLDER_NAME, ARCHIVE_FOLDER_NAME } from './constants';
+
+export const isSupportedProtocol = urlString => {
   var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
   var url = document.createElement('a');
   url.href = urlString;
   return supportedProtocols.indexOf(url.protocol) != -1;
 }
 
-const updateIcon = (foundBookmark, tab) => {
+export const updateIcon = (foundBookmark, tab) => {
   browser.browserAction.setIcon({
     path: foundBookmark ? {
       19: "icons/star-filled-19.png",
@@ -22,34 +24,30 @@ const updateIcon = (foundBookmark, tab) => {
   }); 
 }
 
-const getQueueList = async () => {
+export const getQueueList = async () => {
   const [ found ] = await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});
   if(found) {
-    QUEUE_FOLDER_ID = found.id;
-    const  [ result ] = await browser.bookmarks.getSubTree(QUEUE_FOLDER_ID);
+    const  [ result ] = await browser.bookmarks.getSubTree(found.id);
     return result.children;
   } else {
-    const { id } = await browser.bookmarks.create({title: QUEUE_FOLDER_NAME});
-    QUEUE_FOLDER_ID = id;
+    await browser.bookmarks.create({title: QUEUE_FOLDER_NAME});
     return [];
   }
 }
 
-const getArchiveList = async () => {
+export const getArchiveList = async () => {
   const [ found ] = await browser.bookmarks.search({title: ARCHIVE_FOLDER_NAME});
   if(found) {
-    ARCHIVE_FOLDER_ID = found.id;
-    const  [ result ] = await browser.bookmarks.getSubTree(ARCHIVE_FOLDER_ID);
+    const  [ result ] = await browser.bookmarks.getSubTree(found.id);
     return result.children;
   } else {
-    const { id } = await browser.bookmarks.create({title: ARCHIVE_FOLDER_NAME});
-    ARCHIVE_FOLDER_ID = id;
+    await browser.bookmarks.create({title: ARCHIVE_FOLDER_NAME});
     return [];
   }
 }
 
 
-const getActiveTab = async () => {
+export const getActiveTab = async () => {
   const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
   if(activeTab && isSupportedProtocol(activeTab.url)) {
     return activeTab;
@@ -58,12 +56,12 @@ const getActiveTab = async () => {
   }
 }
 
-const findInQueue = async url => {
+export const findInQueue = async url => {
   const queue = await getQueueList();
   return queue.find( e => e.url === url);
 }
 
-const findInArchive = async url => {
+export const findInArchive = async url => {
   const queue = await getArchiveList();
   return queue.find( e => e.url === url);
 }
