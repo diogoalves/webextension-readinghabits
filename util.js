@@ -22,34 +22,32 @@ const updateIcon = (foundBookmark, tab) => {
   }); 
 }
 
-const initQueueFolder = async () => {
-  const [ found ] = await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});
-  if(found) {
-    QUEUE_FOLDER_ID = found.id;
-  } else {
-    const { id } = await browser.bookmarks.create({title: QUEUE_FOLDER_NAME});
-    QUEUE_FOLDER_ID = id;
-  }
-}
-
-const initArchieveFolder = async () => {
-  const [ found ] = await browser.bookmarks.search({title: ARCHIVE_FOLDER_NAME});
-  if(found) {
-    ARCHIVE_FOLDER_ID = found.id;
-  } else {
-    const { id } = await browser.bookmarks.create({title: ARCHIVE_FOLDER_NAME});
-    ARCHIVE_FOLDER_ID = id;
-  }
-}
-
 const getQueueList = async () => {
   const [ found ] = await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});
   if(found) {
     QUEUE_FOLDER_ID = found.id;
     const  [ result ] = await browser.bookmarks.getSubTree(QUEUE_FOLDER_ID);
     return result.children;
+  } else {
+    const { id } = await browser.bookmarks.create({title: QUEUE_FOLDER_NAME});
+    QUEUE_FOLDER_ID = id;
+    return [];
   }
 }
+
+const getArchiveList = async () => {
+  const [ found ] = await browser.bookmarks.search({title: ARCHIVE_FOLDER_NAME});
+  if(found) {
+    ARCHIVE_FOLDER_ID = found.id;
+    const  [ result ] = await browser.bookmarks.getSubTree(ARCHIVE_FOLDER_ID);
+    return result.children;
+  } else {
+    const { id } = await browser.bookmarks.create({title: ARCHIVE_FOLDER_NAME});
+    ARCHIVE_FOLDER_ID = id;
+    return [];
+  }
+}
+
 
 const getActiveTab = async () => {
   const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
@@ -62,5 +60,10 @@ const getActiveTab = async () => {
 
 const findInQueue = async url => {
   const queue = await getQueueList();
+  return queue.find( e => e.url === url);
+}
+
+const findInArchive = async url => {
+  const queue = await getArchiveList();
   return queue.find( e => e.url === url);
 }
