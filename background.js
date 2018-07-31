@@ -9,10 +9,12 @@ const click = async () => {
     const foundBookmark = await findInQueue(activeTab.url);
     const foundArchive = await findInArchive(activeTab.url);
 
-    if(foundBookmark && !foundArchive) browser.bookmarks.move(foundBookmark.id, {parentId: ARCHIVE_FOLDER_ID});
-    else if(foundBookmark && foundArchive) browser.bookmarks.remove(foundBookmark.id);
-    else if(!foundBookmark && foundArchive) browser.bookmarks.move(foundArchive.id, {parentId: QUEUE_FOLDER_ID});
-    else if(!foundBookmark && !foundArchive) browser.bookmarks.create({parentId: QUEUE_FOLDER_ID, title: activeTab.title, url: activeTab.url});
+    if(foundBookmark && !foundArchive) await browser.bookmarks.move(foundBookmark.id, {parentId: ARCHIVE_FOLDER_ID});
+    else if(foundBookmark && foundArchive) await browser.bookmarks.remove(foundBookmark.id);
+    else if(!foundBookmark && foundArchive) await browser.bookmarks.move(foundArchive.id, {parentId: QUEUE_FOLDER_ID});
+    else if(!foundBookmark && !foundArchive) await browser.bookmarks.create({parentId: QUEUE_FOLDER_ID, title: activeTab.title, url: activeTab.url});
+
+    updateStatistics();
   }
 }
 
