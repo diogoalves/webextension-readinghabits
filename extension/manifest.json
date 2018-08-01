@@ -16,7 +16,7 @@
 
   "browser_action": {
     "browser_style": true,
-    "default_icon": "icons/star-empty-38.png",
+    "default_icon": "icons/star-filled-38.png",
     "default_title": "Read it Later",
     "default_popup": "popup.html"
   }

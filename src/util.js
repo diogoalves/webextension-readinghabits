@@ -6,20 +6,9 @@ export const isSupportedProtocol = urlString => {
 }
 
 export const updateIcon = (foundBookmark, tab) => {
-  browser.browserAction.setIcon({
-    path: foundBookmark ? {
-      19: "icons/star-filled-19.png",
-      38: "icons/star-filled-38.png"
-    } : {
-      19: "icons/star-empty-19.png",
-      38: "icons/star-empty-38.png"
-    },
-    tabId: tab.id
-  });
-  browser.browserAction.setTitle({
-    title: foundBookmark ? 'Read it later!' : 'Already read!',
-    tabId: tab.id
-  }); 
+  console.log("entrou; + " + foundBookmark)
+
+
 }
 
 export const getActiveTab = async () => {
