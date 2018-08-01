@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71,7 +71,7 @@
 
 
 if (true) {
-  module.exports = __webpack_require__(5);
+  module.exports = __webpack_require__(6);
 } else {
   module.exports = require('./cjs/react.development.js');
 }
@@ -246,64 +246,192 @@ module.exports = emptyObject;
 "use strict";
 
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
+  var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
+  var url = document.createElement('a');
+  url.href = urlString;
+  return supportedProtocols.indexOf(url.protocol) != -1;
+};
+
+const updateIcon = exports.updateIcon = (foundBookmark, tab) => {
+  browser.browserAction.setIcon({
+    path: foundBookmark ? {
+      19: "icons/star-filled-19.png",
+      38: "icons/star-filled-38.png"
+    } : {
+      19: "icons/star-empty-19.png",
+      38: "icons/star-empty-38.png"
+    },
+    tabId: tab.id
+  });
+  browser.browserAction.setTitle({
+    title: foundBookmark ? 'Read it later!' : 'Already read!',
+    tabId: tab.id
+  });
+};
+
+const getActiveTab = exports.getActiveTab = (() => {
+  var _ref = _asyncToGenerator(function* () {
+    const [activeTab] = yield browser.tabs.query({ active: true, currentWindow: true });
+    if (activeTab && isSupportedProtocol(activeTab.url)) {
+      return activeTab;
+    } else {
+      return null;
+    }
+  });
+
+  return function getActiveTab() {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+const getFolderId = exports.getFolderId = (() => {
+  var _ref2 = _asyncToGenerator(function* (folderName) {
+    const [found] = yield browser.bookmarks.search({ title: folderName });
+    if (found) {
+      return found.id;
+    } else {
+      const newFolder = yield browser.bookmarks.create({ title: folderName });
+      return newFolder.id;
+    }
+  });
+
+  return function getFolderId(_x) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+const getItems = exports.getItems = (() => {
+  var _ref3 = _asyncToGenerator(function* (folderId) {
+    const [result] = yield browser.bookmarks.getSubTree(folderId);
+    return result.children;
+  });
+
+  return function getItems(_x2) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+const find = exports.find = (() => {
+  var _ref4 = _asyncToGenerator(function* (folderId, url) {
+    const items = yield getItems(folderId);
+    return items.find(function (e) {
+      return e.url === url;
+    });
+  });
+
+  return function find(_x3, _x4) {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactDom = __webpack_require__(6);
+var _reactDom = __webpack_require__(7);
 
 var _reactDom2 = _interopRequireDefault(_reactDom);
 
-var _nestedComponent = __webpack_require__(16);
+var _nestedComponent = __webpack_require__(17);
 
 var _nestedComponent2 = _interopRequireDefault(_nestedComponent);
 
-var _statistics = __webpack_require__(17);
+var _statistics = __webpack_require__(18);
+
+var _util = __webpack_require__(4);
+
+var _constants = __webpack_require__(19);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 class Popup extends _react2.default.Component {
-  constructor(props) {
-    super(props);
+  constructor(...args) {
+    var _temp, _this;
 
-    this.handleClick = (() => {
-      var _ref = _asyncToGenerator(function* (event) {
-        console.log("1313123122");
-        const stat = yield (0, _statistics.getStatistics)();
-        console.log(stat);
-      });
+    return _temp = _this = super(...args), this.state = {
+      activeTab: null,
+      queueFolderId: null,
+      archiveFolderId: null,
+      queuedToday: 1,
+      archivedToday: 2,
+      totalQueued: 3,
+      totalArchived: 4,
+      queuedPerDay: {},
+      archivedPerDay: {},
+      accumulatedPerDay: {}
+    }, this.handleClick = _asyncToGenerator(function* () {
+      const { activeTab, queueFolderId, archiveFolderId } = _this.state;
+      if (activeTab) {
+        const foundBookmark = yield (0, _util.find)(queueFolderId, activeTab.url);
+        const foundArchive = yield (0, _util.find)(archiveFolderId, activeTab.url);
 
-      return function (_x) {
-        return _ref.apply(this, arguments);
-      };
-    })();
+        if (foundBookmark && !foundArchive) yield browser.bookmarks.move(foundBookmark.id, { parentId: archiveFolderId });else if (foundBookmark && foundArchive) yield browser.bookmarks.remove(foundBookmark.id);else if (!foundBookmark && foundArchive) yield browser.bookmarks.move(foundArchive.id, { parentId: queueFolderId });else if (!foundBookmark && !foundArchive) yield browser.bookmarks.create({ parentId: queueFolderId, title: activeTab.title, url: activeTab.url });
 
-    this.state = { activeTab: null };
+        _this.setState(_extends({}, (yield (0, _statistics.getStatistics)(queueFolderId, archiveFolderId))));
+      }
+    }), _temp;
   }
 
   componentDidMount() {
-    // Get the active tab and store it in component state.
-    browser.tabs.query({ active: true }).then(tabs => {
-      this.setState({ activeTab: tabs[0] });
-    });
+    var _this2 = this;
+
+    return _asyncToGenerator(function* () {
+      const activeTab = yield (0, _util.getActiveTab)();
+      const queueFolderId = yield (0, _util.getFolderId)(_constants.QUEUE_FOLDER_NAME);
+      const archiveFolderId = yield (0, _util.getFolderId)(_constants.ARCHIVE_FOLDER_NAME);
+      _this2.setState(_extends({
+        activeTab,
+        queueFolderId,
+        archiveFolderId
+      }, (yield (0, _statistics.getStatistics)(queueFolderId, archiveFolderId))));
+    })();
   }
 
   render() {
-    const { activeTab } = this.state;
+    const { activeTab, queuedToday, archivedToday, totalQueued, totalArchived } = this.state;
     return _react2.default.createElement(
       'div',
       null,
       _react2.default.createElement(
-        'h1',
+        'h2',
         null,
-        'React Component23'
+        'Reading habits'
       ),
       _react2.default.createElement(
         'p',
         null,
-        'This is an example of a popup UI in React.'
+        'You have added ',
+        queuedToday,
+        ' items today, from those ',
+        archivedToday,
+        ' were archived.'
+      ),
+      _react2.default.createElement(
+        'p',
+        null,
+        'Total added: ',
+        totalQueued,
+        '. Total archived: ',
+        totalArchived,
+        '.'
       ),
       _react2.default.createElement(
         'p',
@@ -311,20 +439,43 @@ class Popup extends _react2.default.Component {
         'Active tab: ',
         activeTab ? activeTab.url : '[waiting for result]'
       ),
-      _react2.default.createElement(_nestedComponent2.default, null),
       _react2.default.createElement(
         'button',
         { onClick: this.handleClick },
-        'Lasers3'
+        'Read it later!'
       )
     );
   }
 }
 
+const update = (() => {
+  var _ref2 = _asyncToGenerator(function* () {
+    const activeTab = yield (0, _util.getActiveTab)();
+    if (activeTab) {
+      const folderId = yield (0, _util.getFolderId)(_constants.QUEUE_FOLDER_NAME);
+      const foundBookmark = yield (0, _util.find)(folderId, activeTab.url);
+      (0, _util.updateIcon)(foundBookmark, activeTab);
+    }
+  });
+
+  return function update() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+// listen for tab and bookmarks changes
+browser.bookmarks.onCreated.addListener(update);
+browser.bookmarks.onRemoved.addListener(update);
+browser.bookmarks.onMoved.addListener(update);
+browser.tabs.onUpdated.addListener(update);
+browser.tabs.onActivated.addListener(update);
+browser.windows.onFocusChanged.addListener(update);
+update();
+
 _reactDom2.default.render(_react2.default.createElement(Popup, null), document.getElementById('app'));
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -352,7 +503,7 @@ isValidElement:K,version:"16.2.0",__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_F
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -390,14 +541,14 @@ if (true) {
   // DCE check should happen before ReactDOM bundle executes so that
   // DevTools can report bad minification during injection.
   checkDCE();
-  module.exports = __webpack_require__(7);
+  module.exports = __webpack_require__(8);
 } else {
   module.exports = require('./cjs/react-dom.development.js');
 }
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -413,7 +564,7 @@ if (true) {
 /*
  Modernizr 3.0.0pre (Custom Build) | MIT
 */
-var aa=__webpack_require__(0),l=__webpack_require__(8),B=__webpack_require__(2),C=__webpack_require__(1),ba=__webpack_require__(9),da=__webpack_require__(10),ea=__webpack_require__(11),fa=__webpack_require__(12),ia=__webpack_require__(15),D=__webpack_require__(3);
+var aa=__webpack_require__(0),l=__webpack_require__(9),B=__webpack_require__(2),C=__webpack_require__(1),ba=__webpack_require__(10),da=__webpack_require__(11),ea=__webpack_require__(12),fa=__webpack_require__(13),ia=__webpack_require__(16),D=__webpack_require__(3);
 function E(a){for(var b=arguments.length-1,c="Minified React error #"+a+"; visit http://facebook.github.io/react/docs/error-decoder.html?invariant\x3d"+a,d=0;d<b;d++)c+="\x26args[]\x3d"+encodeURIComponent(arguments[d+1]);b=Error(c+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings.");b.name="Invariant Violation";b.framesToPop=1;throw b;}aa?void 0:E("227");
 var oa={children:!0,dangerouslySetInnerHTML:!0,defaultValue:!0,defaultChecked:!0,innerHTML:!0,suppressContentEditableWarning:!0,suppressHydrationWarning:!0,style:!0};function pa(a,b){return(a&b)===b}
 var ta={MUST_USE_PROPERTY:1,HAS_BOOLEAN_VALUE:4,HAS_NUMERIC_VALUE:8,HAS_POSITIVE_NUMERIC_VALUE:24,HAS_OVERLOADED_BOOLEAN_VALUE:32,HAS_STRING_BOOLEAN_VALUE:64,injectDOMPropertyConfig:function(a){var b=ta,c=a.Properties||{},d=a.DOMAttributeNamespaces||{},e=a.DOMAttributeNames||{};a=a.DOMMutationMethods||{};for(var f in c){ua.hasOwnProperty(f)?E("48",f):void 0;var g=f.toLowerCase(),h=c[f];g={attributeName:g,attributeNamespace:null,propertyName:f,mutationMethod:null,mustUseProperty:pa(h,b.MUST_USE_PROPERTY),
@@ -633,7 +784,7 @@ Z.injectIntoDevTools({findFiberByHostInstance:pb,bundleType:0,version:"16.2.0",r
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -672,7 +823,7 @@ var ExecutionEnvironment = {
 module.exports = ExecutionEnvironment;
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -752,7 +903,7 @@ var EventListener = {
 module.exports = EventListener;
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -794,7 +945,7 @@ function getActiveElement(doc) /*?DOMElement*/{
 module.exports = getActiveElement;
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -865,7 +1016,7 @@ function shallowEqual(objA, objB) {
 module.exports = shallowEqual;
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -880,7 +1031,7 @@ module.exports = shallowEqual;
  * 
  */
 
-var isTextNode = __webpack_require__(13);
+var isTextNode = __webpack_require__(14);
 
 /*eslint-disable no-bitwise */
 
@@ -908,7 +1059,7 @@ function containsNode(outerNode, innerNode) {
 module.exports = containsNode;
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -923,7 +1074,7 @@ module.exports = containsNode;
  * @typechecks
  */
 
-var isNode = __webpack_require__(14);
+var isNode = __webpack_require__(15);
 
 /**
  * @param {*} object The object to check.
@@ -936,7 +1087,7 @@ function isTextNode(object) {
 module.exports = isTextNode;
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -964,7 +1115,7 @@ function isNode(object) {
 module.exports = isNode;
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -994,7 +1145,7 @@ function focusNode(node) {
 module.exports = focusNode;
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1031,7 +1182,7 @@ class Nested extends _react2.default.Component {
 exports.default = Nested;
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1042,14 +1193,14 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getStatistics = undefined;
 
-var _util = __webpack_require__(18);
+var _util = __webpack_require__(4);
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 const getStatistics = exports.getStatistics = (() => {
-  var _ref = _asyncToGenerator(function* () {
-    const queued = yield (0, _util.getQueueList)();
-    const archived = yield (0, _util.getArchiveList)();
+  var _ref = _asyncToGenerator(function* (queueFolderId, archiveFolderId) {
+    const queued = yield (0, _util.getItems)(queueFolderId);
+    const archived = yield (0, _util.getItems)(archiveFolderId);
     const today = new Date().toLocaleDateString();
 
     const totalQueued = queued.length + archived.length;
@@ -1075,7 +1226,7 @@ const getStatistics = exports.getStatistics = (() => {
     };
   });
 
-  return function getStatistics() {
+  return function getStatistics(_x, _x2) {
     return _ref.apply(this, arguments);
   };
 })();
@@ -1087,121 +1238,6 @@ const perDay = data => {
     return acc;
   }, {});
 };
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.findInArchive = exports.findInQueue = exports.getActiveTab = exports.getArchiveList = exports.getQueueList = exports.updateIcon = exports.isSupportedProtocol = undefined;
-
-var _constants = __webpack_require__(19);
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
-  var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
-  var url = document.createElement('a');
-  url.href = urlString;
-  return supportedProtocols.indexOf(url.protocol) != -1;
-};
-
-const updateIcon = exports.updateIcon = (foundBookmark, tab) => {
-  browser.browserAction.setIcon({
-    path: foundBookmark ? {
-      19: "icons/star-filled-19.png",
-      38: "icons/star-filled-38.png"
-    } : {
-      19: "icons/star-empty-19.png",
-      38: "icons/star-empty-38.png"
-    },
-    tabId: tab.id
-  });
-  browser.browserAction.setTitle({
-    title: foundBookmark ? 'Read it later!' : 'Already read!',
-    tabId: tab.id
-  });
-};
-
-const getQueueList = exports.getQueueList = (() => {
-  var _ref = _asyncToGenerator(function* () {
-    const [found] = yield browser.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
-    if (found) {
-      const [result] = yield browser.bookmarks.getSubTree(found.id);
-      return result.children;
-    } else {
-      yield browser.bookmarks.create({ title: _constants.QUEUE_FOLDER_NAME });
-      return [];
-    }
-  });
-
-  return function getQueueList() {
-    return _ref.apply(this, arguments);
-  };
-})();
-
-const getArchiveList = exports.getArchiveList = (() => {
-  var _ref2 = _asyncToGenerator(function* () {
-    const [found] = yield browser.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
-    if (found) {
-      const [result] = yield browser.bookmarks.getSubTree(found.id);
-      return result.children;
-    } else {
-      yield browser.bookmarks.create({ title: _constants.ARCHIVE_FOLDER_NAME });
-      return [];
-    }
-  });
-
-  return function getArchiveList() {
-    return _ref2.apply(this, arguments);
-  };
-})();
-
-const getActiveTab = exports.getActiveTab = (() => {
-  var _ref3 = _asyncToGenerator(function* () {
-    const [activeTab] = yield browser.tabs.query({ active: true, currentWindow: true });
-    if (activeTab && isSupportedProtocol(activeTab.url)) {
-      return activeTab;
-    } else {
-      return null;
-    }
-  });
-
-  return function getActiveTab() {
-    return _ref3.apply(this, arguments);
-  };
-})();
-
-const findInQueue = exports.findInQueue = (() => {
-  var _ref4 = _asyncToGenerator(function* (url) {
-    const queue = yield getQueueList();
-    return queue.find(function (e) {
-      return e.url === url;
-    });
-  });
-
-  return function findInQueue(_x) {
-    return _ref4.apply(this, arguments);
-  };
-})();
-
-const findInArchive = exports.findInArchive = (() => {
-  var _ref5 = _asyncToGenerator(function* (url) {
-    const queue = yield getArchiveList();
-    return queue.find(function (e) {
-      return e.url === url;
-    });
-  });
-
-  return function findInArchive(_x2) {
-    return _ref5.apply(this, arguments);
-  };
-})();
 
 /***/ }),
 /* 19 */

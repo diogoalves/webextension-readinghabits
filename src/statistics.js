@@ -1,8 +1,8 @@
-import { getQueueList, getArchiveList} from './util';
+import { getItems} from './util';
 
-export const getStatistics = async () => {
-  const queued = await getQueueList();
-  const archived = await getArchiveList();
+export const getStatistics = async (queueFolderId, archiveFolderId) => {
+  const queued = await getItems(queueFolderId);
+  const archived = await getItems(archiveFolderId);
   const today = new Date().toLocaleDateString();
 
   const totalQueued = queued.length + archived.length;

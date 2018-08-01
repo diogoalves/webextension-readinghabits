@@ -1,5 +1,3 @@
-import {QUEUE_FOLDER_NAME, ARCHIVE_FOLDER_NAME } from './constants';
-
 export const isSupportedProtocol = urlString => {
   var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
   var url = document.createElement('a');
@@ -24,29 +22,6 @@ export const updateIcon = (foundBookmark, tab) => {
   }); 
 }
 
-export const getQueueList = async () => {
-  const [ found ] = await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});
-  if(found) {
-    const  [ result ] = await browser.bookmarks.getSubTree(found.id);
-    return result.children;
-  } else {
-    await browser.bookmarks.create({title: QUEUE_FOLDER_NAME});
-    return [];
-  }
-}
-
-export const getArchiveList = async () => {
-  const [ found ] = await browser.bookmarks.search({title: ARCHIVE_FOLDER_NAME});
-  if(found) {
-    const  [ result ] = await browser.bookmarks.getSubTree(found.id);
-    return result.children;
-  } else {
-    await browser.bookmarks.create({title: ARCHIVE_FOLDER_NAME});
-    return [];
-  }
-}
-
-
 export const getActiveTab = async () => {
   const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
   if(activeTab && isSupportedProtocol(activeTab.url)) {
@@ -56,12 +31,26 @@ export const getActiveTab = async () => {
   }
 }
 
-export const findInQueue = async url => {
-  const queue = await getQueueList();
-  return queue.find( e => e.url === url);
+export const getFolderId = async folderName => {
+  const [ found ] = await browser.bookmarks.search({title: folderName});
+  if(found) {
+    return found.id;
+  } else {
+    const newFolder = await browser.bookmarks.create({title: folderName});
+    return newFolder.id;
+  }
 }
 
-export const findInArchive = async url => {
-  const queue = await getArchiveList();
-  return queue.find( e => e.url === url);
+export const getItems = async folderId => {
+  const  [ result ] = await browser.bookmarks.getSubTree(folderId);
+  return result.children;
 }
+
+export const find = async (folderId, url) => {
+  const items = await getItems(folderId);
+  return items.find( e => e.url === url);
+}
+
+
+
+

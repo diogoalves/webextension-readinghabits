@@ -15,17 +15,9 @@
   ],
 
   "browser_action": {
-    "default_icon": "icons/star-empty-38.png",
-    "default_title": "Read it Later"
-  },
-
-  "browser_action": {
     "browser_style": true,
-    "default_icon": {
-      "48": "images/Watermelon-48.png",
-      "96": "images/Watermelon-96.png"
-    },
-    "default_title": "React Example",
+    "default_icon": "icons/star-empty-38.png",
+    "default_title": "Read it Later",
     "default_popup": "popup.html"
   }
 
