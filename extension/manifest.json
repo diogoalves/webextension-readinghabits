@@ -5,8 +5,8 @@
   "description": "A simple reading habits extension",
   "homepage_url": "https://github.com/diogoalves/webextension-readinghabits",
   "icons": {
-    "48": "icons/bookmark-it.png",
-    "96": "icons/bookmark-it@2x.png"
+    "48": "icons/empty-48.png",
+    "96": "icons/empty-96.png"
   },
 
   "permissions": [
@@ -16,9 +16,12 @@
 
   "browser_action": {
     "browser_style": true,
-    "default_icon": "icons/star-filled-38.png",
-    "default_title": "Read it Later",
+    "default_icon": "icons/empty-38.png",
+    "default_title": "Reading habits",
     "default_popup": "popup.html"
-  }
+  },
 
+  "background": {
+    "scripts": ["browser-polyfill.min.js", "iconUpdater.js"]
+  }
 }

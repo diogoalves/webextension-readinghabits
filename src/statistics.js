@@ -1,7 +1,5 @@
 import { getItems} from './util';
 
-
-
 export const getStatistics = async (queueFolderId, archiveFolderId) => {
   const queued = await getItems(queueFolderId);
   const archived = await getItems(archiveFolderId);
@@ -9,7 +7,7 @@ export const getStatistics = async (queueFolderId, archiveFolderId) => {
 
   const totalQueued = queued.length + archived.length;
   const totalArchived = archived.length;
-  const queuedToday = queued.filter( e => new Date(e.dateAdded).toLocaleDateString() ===  today ).length;
+  const queuedToday = queued.concat(archived).filter( e => new Date(e.dateAdded).toLocaleDateString() ===  today ).length;
   const archivedToday = archived.filter( e => new Date(e.dateAdded).toLocaleDateString() ===  today ).length;
   const data = perDay(queued, archived);
 
