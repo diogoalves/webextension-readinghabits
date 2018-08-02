@@ -6,38 +6,7 @@ import { getActiveTab, getFolderId, find } from './util';
 import { QUEUE_FOLDER_NAME, ARCHIVE_FOLDER_NAME } from './constants';
 import { ComposedChart, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
-const data = [ { date: '2018-07-01', queued: 5, accumulated: 3, archived: 2 },
-{ date: '2018-07-02', queued: 5, accumulated: 4, archived: 1 },
-{ date: '2018-07-03', queued: 8, accumulated: 4, archived: 4 },
-{ date: '2018-07-04', queued: 13, accumulated: 3, archived: 10 },
-{ date: '2018-07-05', queued: 6, accumulated: 4, archived: 2 },
-{ date: '2018-07-06', queued: 6, accumulated: 0, archived: 6 },
-{ date: '2018-07-07', queued: 4, accumulated: 4, archived: 0 },
-{ date: '2018-07-08', queued: 6, accumulated: 2, archived: 4 },
-{ date: '2018-07-09', queued: 6, accumulated: 4, archived: 2 },
-{ date: '2018-07-10', queued: 2, accumulated: 1, archived: 1 },
-{ date: '2018-07-11', queued: 11, accumulated: 4, archived: 7 },
-{ date: '2018-07-12', queued: 6, accumulated: 5, archived: 1 },
-{ date: '2018-07-13', queued: 6, accumulated: 4, archived: 2 },
-{ date: '2018-07-14', queued: 7, accumulated: 4, archived: 3 },
-{ date: '2018-07-15', queued: 5, accumulated: 2, archived: 3 },
-{ date: '2018-07-16', queued: 4, accumulated: 3, archived: 1 },
-{ date: '2018-07-17', queued: 7, accumulated: 2, archived: 5 },
-{ date: '2018-07-18', queued: 6, accumulated: 4, archived: 2 },
-{ date: '2018-07-19', queued: 9, accumulated: 3, archived: 6 },
-{ date: '2018-07-20', queued: 6, accumulated: 5, archived: 1 },
-{ date: '2018-07-21', queued: 2, accumulated: 2, archived: 0 },
-{ date: '2018-07-22', queued: 8, accumulated: 5, archived: 3 },
-{ date: '2018-07-23', queued: 5, accumulated: 2, archived: 3 },
-{ date: '2018-07-24', queued: 9, accumulated: 2, archived: 7 },
-{ date: '2018-07-25', queued: 4, accumulated: 3, archived: 1 },
-{ date: '2018-07-26', queued: 8, accumulated: 4, archived: 4 },
-{ date: '2018-07-27', queued: 5, accumulated: 2, archived: 3 },
-{ date: '2018-07-28', queued: 6, accumulated: 4, archived: 2 },
-{ date: '2018-07-29', queued: 8, accumulated: 3, archived: 5 },
-{ date: '2018-07-30', queued: 8, accumulated: 4, archived: 4 },
-{ date: '2018-07-31', queued: 3, accumulated: 1, archived: 2 },
-{ date: '2018-08-01', queued: 6, accumulated: 3, archived: 3 } ]
+
 
 class Popup extends React.Component {
 
@@ -50,9 +19,7 @@ class Popup extends React.Component {
     archivedToday: 2,
     totalQueued: 3,
     totalArchived: 4,
-    queuedPerDay: {},
-    archivedPerDay: {},
-    accumulatedPerDay: {}
+    data: null
   }
 
   async componentDidMount() {
@@ -89,7 +56,7 @@ class Popup extends React.Component {
   }
   
   render() {
-    const { activeTab, foundBookmark, queuedToday, archivedToday, totalQueued, totalArchived } = this.state;
+    const { activeTab, foundBookmark, queuedToday, archivedToday, totalQueued, totalArchived, data } = this.state;
     return (
       <div>
         <h2>Reading habits</h2>

@@ -11,7 +11,7 @@ export const getStatistics = async (queueFolderId, archiveFolderId) => {
   const totalArchived = archived.length;
   const queuedToday = queued.filter( e => new Date(e.dateAdded).toLocaleDateString() ===  today ).length;
   const archivedToday = archived.filter( e => new Date(e.dateAdded).toLocaleDateString() ===  today ).length;
-  const stat = perDay(queued, archived);
+  const data = perDay(queued, archived);
 
 
   return ({
@@ -19,7 +19,7 @@ export const getStatistics = async (queueFolderId, archiveFolderId) => {
     archivedToday,
     totalQueued,
     totalArchived,
-    stat
+    data
   });
 }
 
@@ -52,15 +52,15 @@ const perDay = (queuedPerDay, archivedPerDay) => {
   })
   const step5 = step4.reduce( (acc, cur, index) => {
     if(acc[index-1]) {
-      return acc.push({
+      return acc.concat({
         ...cur,
         accumulated: cur.accumulated + acc[index-1].accumulated
       })
     } else {
-      return acc.push(cur);
+      return acc.concat(cur);
     }
   }, [])
-  return step4;
+  return step5;
 }
 
 
