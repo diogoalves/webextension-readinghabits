@@ -4,10 +4,12 @@ import ReactDOM from 'react-dom';
 import { getStatistics } from './statistics';
 import { getActiveTab, getFolderId, find } from './util';
 import { QUEUE_FOLDER_NAME, ARCHIVE_FOLDER_NAME } from './constants';
-import { ComposedChart, Area, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import Chart from './Chart';
 
-
-
+//TODO improve interface
+//TODO show button only if its a valida url
+//TODO move ARCHIVE to a subfolder?
+//TODO try to run in chrome
 class Popup extends React.Component {
 
   state = {
@@ -59,30 +61,15 @@ class Popup extends React.Component {
     const { activeTab, foundBookmark, queuedToday, archivedToday, totalQueued, totalArchived, data } = this.state;
     return (
       <div>
-        <h2>Reading habits</h2>
-        <p>
-          You have added {queuedToday} items today, from those {archivedToday} were archived.
-        </p>
-        <p>
-          Total added: {totalQueued}. Total archived: {totalArchived}.
-        </p>        
-        <p>
-          Active tab: {activeTab ? activeTab.url : '[waiting for result]'}
-        </p>
         <button onClick={this.handleClick} >
           { foundBookmark ? 'Already read' : 'Read it later' }
         </button>
-        <ComposedChart width={350} height={200} data={data}
-            margin={{top: 20, right: 5, bottom: 20, left: 5}}>
-          <CartesianGrid stroke='#f5f5f5'/>
-          <XAxis dataKey="date"/>
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Area type='monotone' dataKey='accumulated' fill='#8884d8' stroke='#8884d8'/>
-          <Bar dataKey='queued' barSize={4} fill='#413ea0' />
-          <Bar dataKey='archived' barSize={4} fill='#410000' />
-        </ComposedChart>
+        
+
+        <Chart data={data} />
+        <small>
+          Added {queuedToday} and archived {archivedToday} items today. Total added: {totalQueued}. Total archived: {totalArchived}.
+        </small>
       </div>
     );
   }
