@@ -5,12 +5,6 @@ export const isSupportedProtocol = urlString => {
   return supportedProtocols.indexOf(url.protocol) != -1;
 }
 
-export const updateIcon = (foundBookmark, tab) => {
-  console.log("entrou; + " + foundBookmark)
-
-
-}
-
 export const getActiveTab = async () => {
   const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
   if(activeTab && isSupportedProtocol(activeTab.url)) {
