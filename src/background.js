@@ -1,22 +1,6 @@
-const QUEUE_FOLDER_NAME = 'READ IT LATER';
-const ARCHIVE_FOLDER_NAME = 'ARCHIVED';
-
-const isSupportedProtocol = urlString => {
-  var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
-  var url = document.createElement('a');
-  url.href = urlString;
-  return supportedProtocols.indexOf(url.protocol) != -1;
-}
-
-const getItems = async folderId => {
-  const  [ result ] = await browser.bookmarks.getSubTree(folderId);
-  return result.children;
-}
-
-const find = async (folderId, url) => {
-  const items = await getItems(folderId);
-  return items.find( e => e.url === url);
-}
+import browser from 'webextension-polyfill';
+import { QUEUE_FOLDER_NAME, ARCHIVE_FOLDER_NAME } from './constants';
+import { isSupportedProtocol, getItems, find} from './util';
 
 const update = async () => {
   const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});

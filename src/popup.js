@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import browser from 'webextension-polyfill';
 
 import { getStatistics } from './statistics';
 import { getActiveTab, getFolderId, find, next } from './util';
