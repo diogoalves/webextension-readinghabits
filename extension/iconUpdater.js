@@ -36,7 +36,15 @@ const update = async () => {
         },
         tabId: activeTab.id
       }
-        browser.browserAction.setIcon(icon);
+      browser.browserAction.setIcon(icon);
+
+      const { length : queuedItemsQuantity } = await getItems(queueFolderId);
+      if(queuedItemsQuantity > 0) {
+        browser.browserAction.setBadgeText({text: `${queuedItemsQuantity}` })
+      } else {
+        browser.browserAction.setBadgeText({text: '' })
+
+      }
     }
 
   }
