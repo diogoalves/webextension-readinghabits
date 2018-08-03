@@ -1,3 +1,5 @@
+import browser from 'webextension-polyfill';
+
 export const isSupportedProtocol = urlString => {
   var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
   var url = document.createElement('a');
