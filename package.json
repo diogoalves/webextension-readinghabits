@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack -w --display-error-details --progress --colors",
-    "start": "web-ext run -s extension/"
+    "start": "web-ext run -s extension/",
+    "package": "web-ext build -s extension/"
   },
   "author": "",
   "license": "MPL-2.0",
