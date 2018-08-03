@@ -34,6 +34,9 @@ export const find = async (folderId, url) => {
   return items.find( e => e.url === url);
 }
 
-
+export const next = async (folderId, currentUrl) => {
+  const items = await getItems(folderId);
+  return items.find( e => e.url !== currentUrl);
+}
 
 
