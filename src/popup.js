@@ -91,8 +91,8 @@ class Popup extends React.Component {
         <Buttons  toggle={this.handleClick} isUrlValid={isUrlValid} isQueued={foundBookmark} isArchived={foundArchive} />
         <Chart data={data} />
         <small>
-          Added {queuedToday} and archived {archivedToday} items today. Total added: {totalQueued}. Total archived: {totalArchived}.
-        </small>
+          Today you have added {queuedToday} and archived {archivedToday} items. Total added: {totalQueued}. Total archived: {totalArchived}.
+        </small>        
         { nextInQueue && (
           <button onClick={this.handleNext} className="buttonNext">Open next</button>
         )}        

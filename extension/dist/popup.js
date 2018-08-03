@@ -24476,11 +24476,11 @@ class Popup extends _react2.default.Component {
       _react2.default.createElement(
         'small',
         null,
-        'Added ',
+        'Today you have added ',
         queuedToday,
         ' and archived ',
         archivedToday,
-        ' items today. Total added: ',
+        ' items. Total added: ',
         totalQueued,
         '. Total archived: ',
         totalArchived,
