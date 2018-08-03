@@ -60,113 +60,24 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 259);
+/******/ 	return __webpack_require__(__webpack_require__.s = 260);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 147:
+/***/ 260:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
-  var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
-  var url = document.createElement('a');
-  url.href = urlString;
-  return supportedProtocols.indexOf(url.protocol) != -1;
-};
-
-const getActiveTab = exports.getActiveTab = (() => {
-  var _ref = _asyncToGenerator(function* () {
-    const [activeTab] = yield browser.tabs.query({ active: true, currentWindow: true });
-    if (activeTab && isSupportedProtocol(activeTab.url)) {
-      return activeTab;
-    } else {
-      return null;
-    }
-  });
-
-  return function getActiveTab() {
-    return _ref.apply(this, arguments);
-  };
-})();
-
-const getFolderId = exports.getFolderId = (() => {
-  var _ref2 = _asyncToGenerator(function* (folderName) {
-    const [found] = yield browser.bookmarks.search({ title: folderName });
-    if (found) {
-      return found.id;
-    } else {
-      const newFolder = yield browser.bookmarks.create({ title: folderName });
-      return newFolder.id;
-    }
-  });
-
-  return function getFolderId(_x) {
-    return _ref2.apply(this, arguments);
-  };
-})();
-
-const getItems = exports.getItems = (() => {
-  var _ref3 = _asyncToGenerator(function* (folderId) {
-    const [result] = yield browser.bookmarks.getSubTree(folderId);
-    return result.children;
-  });
-
-  return function getItems(_x2) {
-    return _ref3.apply(this, arguments);
-  };
-})();
-
-const find = exports.find = (() => {
-  var _ref4 = _asyncToGenerator(function* (folderId, url) {
-    const items = yield getItems(folderId);
-    return items.find(function (e) {
-      return e.url === url;
-    });
-  });
-
-  return function find(_x3, _x4) {
-    return _ref4.apply(this, arguments);
-  };
-})();
-
-const next = exports.next = (() => {
-  var _ref5 = _asyncToGenerator(function* (folderId, currentUrl) {
-    const items = yield getItems(folderId);
-    return items.find(function (e) {
-      return e.url !== currentUrl;
-    });
-  });
-
-  return function next(_x5, _x6) {
-    return _ref5.apply(this, arguments);
-  };
-})();
-
-/***/ }),
-
-/***/ 259:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _webextensionPolyfill = __webpack_require__(89);
+var _webextensionPolyfill = __webpack_require__(45);
 
 var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
 
-var _constants = __webpack_require__(272);
+var _constants = __webpack_require__(91);
 
-var _util = __webpack_require__(147);
+var _util = __webpack_require__(60);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -219,21 +130,7 @@ update();
 
 /***/ }),
 
-/***/ 272:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-const QUEUE_FOLDER_NAME = exports.QUEUE_FOLDER_NAME = 'READ IT LATER';
-const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
-
-/***/ }),
-
-/***/ 89:
+/***/ 45:
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
@@ -1431,6 +1328,116 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 });
 //# sourceMappingURL=browser-polyfill.js.map
 
+
+/***/ }),
+
+/***/ 60:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+
+var _webextensionPolyfill = __webpack_require__(45);
+
+var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
+  var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
+  var url = document.createElement('a');
+  url.href = urlString;
+  return supportedProtocols.indexOf(url.protocol) != -1;
+};
+
+const getActiveTab = exports.getActiveTab = (() => {
+  var _ref = _asyncToGenerator(function* () {
+    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
+    if (activeTab && isSupportedProtocol(activeTab.url)) {
+      return activeTab;
+    } else {
+      return null;
+    }
+  });
+
+  return function getActiveTab() {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+const getFolderId = exports.getFolderId = (() => {
+  var _ref2 = _asyncToGenerator(function* (folderName) {
+    const [found] = yield _webextensionPolyfill2.default.bookmarks.search({ title: folderName });
+    if (found) {
+      return found.id;
+    } else {
+      const newFolder = yield _webextensionPolyfill2.default.bookmarks.create({ title: folderName });
+      return newFolder.id;
+    }
+  });
+
+  return function getFolderId(_x) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+const getItems = exports.getItems = (() => {
+  var _ref3 = _asyncToGenerator(function* (folderId) {
+    const [result] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(folderId);
+    return result.children;
+  });
+
+  return function getItems(_x2) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+const find = exports.find = (() => {
+  var _ref4 = _asyncToGenerator(function* (folderId, url) {
+    const items = yield getItems(folderId);
+    return items.find(function (e) {
+      return e.url === url;
+    });
+  });
+
+  return function find(_x3, _x4) {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+const next = exports.next = (() => {
+  var _ref5 = _asyncToGenerator(function* (folderId, currentUrl) {
+    const items = yield getItems(folderId);
+    return items.find(function (e) {
+      return e.url !== currentUrl;
+    });
+  });
+
+  return function next(_x5, _x6) {
+    return _ref5.apply(this, arguments);
+  };
+})();
+
+/***/ }),
+
+/***/ 91:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+const QUEUE_FOLDER_NAME = exports.QUEUE_FOLDER_NAME = 'READ IT LATER';
+const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
 
 /***/ })
 
