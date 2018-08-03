@@ -7,9 +7,7 @@ h1, h2 {
   border-bottom: 1px solid;
 }
 
-
-.buttonSeeItLater {
-  background-color: #497ff3;
+button {
   border: none;
   color: white;
   padding: 15px 32px;
@@ -22,44 +20,18 @@ h1, h2 {
   width: 100%
 }
 
+.buttonSeeItLater {
+  background-color: #497ff3;
+}
+
 .buttonAlreadySaw {
-  background-color: rgb(243, 79, 73);
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  cursor: pointer;
-  width: 100%
+  background-color: #f34f49;
 }
 
 .buttonNext {
   background-color: #58ba2a;
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  cursor: pointer;
-  width: 100%
 }
 
 .buttonUndo {
   background-color: #f3497f;
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  cursor: pointer;
-  width: 100%
 }
