@@ -30,3 +30,7 @@ When you want to package the extension run:
 
 ### OS Compability
  Linux, Windows and Mac OS X
+
+### Download
+- [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/reading-habits/)
+- [Chrome webstore](https://chrome.google.com/webstore/detail/reading-habits/fcidioikikefdccegcdeejcfkdhlpoch)
