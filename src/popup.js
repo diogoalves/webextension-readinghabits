@@ -49,11 +49,19 @@ class Popup extends React.Component {
       let foundBookmark = await find(queueFolderId, activeTab.url);
       let foundArchive = await find(archiveFolderId, activeTab.url);
   
-      if(foundBookmark && !foundArchive) await browser.bookmarks.move(foundBookmark.id, {parentId: archiveFolderId});
+      if(foundBookmark && !foundArchive) { 
+        const archivedDate = Date.now();
+        await browser.bookmarks.update(foundBookmark.id, {title: `${foundBookmark.title}[${archivedDate}]`});  
+        await browser.bookmarks.move(foundBookmark.id, {parentId: archiveFolderId});   
+      }
       else if(foundBookmark && foundArchive) await browser.bookmarks.remove(foundBookmark.id);
-      else if(!foundBookmark && foundArchive) await browser.bookmarks.move(foundArchive.id, {parentId: queueFolderId});
+      else if(!foundBookmark && foundArchive) {
+        const cleanedTitle = foundArchive.title.substring(0, foundArchive.title.length - 15);
+        await browser.bookmarks.update(foundArchive.id, {title: cleanedTitle});  
+        await browser.bookmarks.move(foundArchive.id, {parentId: queueFolderId}); 
+      }
       else if(!foundBookmark && !foundArchive) await browser.bookmarks.create({parentId: queueFolderId, title: activeTab.title, url: activeTab.url});
-
+      
       foundBookmark = await find(queueFolderId, activeTab.url);
       foundArchive = await find(archiveFolderId, activeTab.url);
       const nextInQueue = await next(queueFolderId, activeTab.url);
@@ -95,7 +103,7 @@ class Popup extends React.Component {
         </small>        
         { nextInQueue && (
           <button onClick={this.handleNext} className="buttonNext">Open next</button>
-        )}        
+        )}      
       </div>
     );
   }

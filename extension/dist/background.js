@@ -1340,7 +1340,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+exports.convertDate = exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
 var _webextensionPolyfill = __webpack_require__(45);
 
@@ -1424,6 +1424,17 @@ const next = exports.next = (() => {
     return _ref5.apply(this, arguments);
   };
 })();
+
+const convertDate = exports.convertDate = date => {
+  var yyyy = date.getFullYear().toString();
+  var mm = (date.getMonth() + 1).toString();
+  var dd = date.getDate().toString();
+
+  var mmChars = mm.split('');
+  var ddChars = dd.split('');
+
+  return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
+};
 
 /***/ }),
 

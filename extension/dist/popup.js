@@ -8695,7 +8695,7 @@ var ErrorBar = (_temp = _class = function (_Component) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+exports.convertDate = exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
 var _webextensionPolyfill = __webpack_require__(45);
 
@@ -8779,6 +8779,17 @@ const next = exports.next = (() => {
     return _ref5.apply(this, arguments);
   };
 })();
+
+const convertDate = exports.convertDate = date => {
+  var yyyy = date.getFullYear().toString();
+  var mm = (date.getMonth() + 1).toString();
+  var dd = date.getDate().toString();
+
+  var mmChars = mm.split('');
+  var ddChars = dd.split('');
+
+  return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
+};
 
 /***/ }),
 /* 61 */
@@ -24436,7 +24447,15 @@ class Popup extends _react2.default.Component {
         let foundBookmark = yield (0, _util.find)(queueFolderId, activeTab.url);
         let foundArchive = yield (0, _util.find)(archiveFolderId, activeTab.url);
 
-        if (foundBookmark && !foundArchive) yield _webextensionPolyfill2.default.bookmarks.move(foundBookmark.id, { parentId: archiveFolderId });else if (foundBookmark && foundArchive) yield _webextensionPolyfill2.default.bookmarks.remove(foundBookmark.id);else if (!foundBookmark && foundArchive) yield _webextensionPolyfill2.default.bookmarks.move(foundArchive.id, { parentId: queueFolderId });else if (!foundBookmark && !foundArchive) yield _webextensionPolyfill2.default.bookmarks.create({ parentId: queueFolderId, title: activeTab.title, url: activeTab.url });
+        if (foundBookmark && !foundArchive) {
+          const archivedDate = Date.now();
+          yield _webextensionPolyfill2.default.bookmarks.update(foundBookmark.id, { title: `${foundBookmark.title}[${archivedDate}]` });
+          yield _webextensionPolyfill2.default.bookmarks.move(foundBookmark.id, { parentId: archiveFolderId });
+        } else if (foundBookmark && foundArchive) yield _webextensionPolyfill2.default.bookmarks.remove(foundBookmark.id);else if (!foundBookmark && foundArchive) {
+          const cleanedTitle = foundArchive.title.substring(0, foundArchive.title.length - 15);
+          yield _webextensionPolyfill2.default.bookmarks.update(foundArchive.id, { title: cleanedTitle });
+          yield _webextensionPolyfill2.default.bookmarks.move(foundArchive.id, { parentId: queueFolderId });
+        } else if (!foundBookmark && !foundArchive) yield _webextensionPolyfill2.default.bookmarks.create({ parentId: queueFolderId, title: activeTab.title, url: activeTab.url });
 
         foundBookmark = yield (0, _util.find)(queueFolderId, activeTab.url);
         foundArchive = yield (0, _util.find)(archiveFolderId, activeTab.url);
@@ -25192,25 +25211,34 @@ const getStatistics = exports.getStatistics = (() => {
 
 const perDay = (queuedPerDay, archivedPerDay) => {
   const step1 = queuedPerDay.reduce((acc, cur) => {
-    const key = convertDate(new Date(cur.dateAdded));
+    const key = (0, _util.convertDate)(new Date(cur.dateAdded));
     acc[key] = {
       date: key,
-      queued: acc[key] ? acc[key].queued + 1 : 1,
-      accumulated: acc[key] ? acc[key].accumulated + 1 : 1,
+      queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,
+      accumulated: acc[key] && acc[key].accumulated ? acc[key].accumulated + 1 : 1,
       archived: 0
     };
     return acc;
   }, {});
   const step2 = archivedPerDay.reduce((acc, cur) => {
-    const key = convertDate(new Date(cur.dateAdded));
+    const key = (0, _util.convertDate)(new Date(cur.dateAdded));
+    const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
+    const keyArchived = (0, _util.convertDate)(new Date(parseInt(archivedTimeStamp, 10)));
     acc[key] = {
       date: key,
-      queued: acc[key] ? acc[key].queued + 1 : 1,
-      accumulated: acc[key] ? acc[key].accumulated : 0,
-      archived: acc[key] ? acc[key].archived + 1 : 1
+      queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,
+      accumulated: acc[key] && acc[key].accumulated ? acc[key].accumulated : 0,
+      archived: acc[key] && acc[key].archived ? acc[key].archived : 0
+    };
+    acc[keyArchived] = {
+      date: keyArchived,
+      queued: acc[keyArchived] && acc[keyArchived].queued ? acc[keyArchived].queued : 0,
+      accumulated: acc[keyArchived] && acc[keyArchived].accumulated ? acc[keyArchived].accumulated : 0,
+      archived: acc[keyArchived] && acc[keyArchived].archived ? acc[keyArchived].archived + 1 : 1
     };
     return acc;
   }, step1);
+  console.log(step2);
   const step3 = Object.values(step2);
   const step4 = step3.sort((a, b) => {
     if (a.date > b.date) return 1;
@@ -25227,17 +25255,6 @@ const perDay = (queuedPerDay, archivedPerDay) => {
     }
   }, []);
   return step5;
-};
-
-const convertDate = date => {
-  var yyyy = date.getFullYear().toString();
-  var mm = (date.getMonth() + 1).toString();
-  var dd = date.getDate().toString();
-
-  var mmChars = mm.split('');
-  var ddChars = dd.split('');
-
-  return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
 };
 
 /***/ }),
