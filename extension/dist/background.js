@@ -1340,7 +1340,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.convertDate = exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+exports.convertDate = exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
 var _webextensionPolyfill = __webpack_require__(45);
 
@@ -1372,8 +1372,21 @@ const getActiveTab = exports.getActiveTab = (() => {
   };
 })();
 
+const getValidTabs = exports.getValidTabs = (() => {
+  var _ref2 = _asyncToGenerator(function* () {
+    const tabs = yield _webextensionPolyfill2.default.tabs.query({});
+    return tabs.filter(function (e) {
+      return isSupportedProtocol(e.url);
+    });
+  });
+
+  return function getValidTabs() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
 const getFolderId = exports.getFolderId = (() => {
-  var _ref2 = _asyncToGenerator(function* (folderName) {
+  var _ref3 = _asyncToGenerator(function* (folderName) {
     const [found] = yield _webextensionPolyfill2.default.bookmarks.search({ title: folderName });
     if (found) {
       return found.id;
@@ -1384,23 +1397,23 @@ const getFolderId = exports.getFolderId = (() => {
   });
 
   return function getFolderId(_x) {
-    return _ref2.apply(this, arguments);
+    return _ref3.apply(this, arguments);
   };
 })();
 
 const getItems = exports.getItems = (() => {
-  var _ref3 = _asyncToGenerator(function* (folderId) {
+  var _ref4 = _asyncToGenerator(function* (folderId) {
     const [result] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(folderId);
     return result.children;
   });
 
   return function getItems(_x2) {
-    return _ref3.apply(this, arguments);
+    return _ref4.apply(this, arguments);
   };
 })();
 
 const find = exports.find = (() => {
-  var _ref4 = _asyncToGenerator(function* (folderId, url) {
+  var _ref5 = _asyncToGenerator(function* (folderId, url) {
     const items = yield getItems(folderId);
     return items.find(function (e) {
       return e.url === url;
@@ -1408,12 +1421,12 @@ const find = exports.find = (() => {
   });
 
   return function find(_x3, _x4) {
-    return _ref4.apply(this, arguments);
+    return _ref5.apply(this, arguments);
   };
 })();
 
 const next = exports.next = (() => {
-  var _ref5 = _asyncToGenerator(function* (folderId, currentUrl) {
+  var _ref6 = _asyncToGenerator(function* (folderId, currentUrl) {
     const items = yield getItems(folderId);
     return items.find(function (e) {
       return e.url !== currentUrl;
@@ -1421,7 +1434,7 @@ const next = exports.next = (() => {
   });
 
   return function next(_x5, _x6) {
-    return _ref5.apply(this, arguments);
+    return _ref6.apply(this, arguments);
   };
 })();
 

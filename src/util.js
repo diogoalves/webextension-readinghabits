@@ -16,6 +16,11 @@ export const getActiveTab = async () => {
   }
 }
 
+export const getValidTabs = async () => {
+  const tabs = await browser.tabs.query({});
+  return tabs.filter( e => isSupportedProtocol(e.url));
+}
+
 export const getFolderId = async folderName => {
   const [ found ] = await browser.bookmarks.search({title: folderName});
   if(found) {

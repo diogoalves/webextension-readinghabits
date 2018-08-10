@@ -8695,7 +8695,7 @@ var ErrorBar = (_temp = _class = function (_Component) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.convertDate = exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+exports.convertDate = exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
 var _webextensionPolyfill = __webpack_require__(45);
 
@@ -8727,8 +8727,21 @@ const getActiveTab = exports.getActiveTab = (() => {
   };
 })();
 
+const getValidTabs = exports.getValidTabs = (() => {
+  var _ref2 = _asyncToGenerator(function* () {
+    const tabs = yield _webextensionPolyfill2.default.tabs.query({});
+    return tabs.filter(function (e) {
+      return isSupportedProtocol(e.url);
+    });
+  });
+
+  return function getValidTabs() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
 const getFolderId = exports.getFolderId = (() => {
-  var _ref2 = _asyncToGenerator(function* (folderName) {
+  var _ref3 = _asyncToGenerator(function* (folderName) {
     const [found] = yield _webextensionPolyfill2.default.bookmarks.search({ title: folderName });
     if (found) {
       return found.id;
@@ -8739,23 +8752,23 @@ const getFolderId = exports.getFolderId = (() => {
   });
 
   return function getFolderId(_x) {
-    return _ref2.apply(this, arguments);
+    return _ref3.apply(this, arguments);
   };
 })();
 
 const getItems = exports.getItems = (() => {
-  var _ref3 = _asyncToGenerator(function* (folderId) {
+  var _ref4 = _asyncToGenerator(function* (folderId) {
     const [result] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(folderId);
     return result.children;
   });
 
   return function getItems(_x2) {
-    return _ref3.apply(this, arguments);
+    return _ref4.apply(this, arguments);
   };
 })();
 
 const find = exports.find = (() => {
-  var _ref4 = _asyncToGenerator(function* (folderId, url) {
+  var _ref5 = _asyncToGenerator(function* (folderId, url) {
     const items = yield getItems(folderId);
     return items.find(function (e) {
       return e.url === url;
@@ -8763,12 +8776,12 @@ const find = exports.find = (() => {
   });
 
   return function find(_x3, _x4) {
-    return _ref4.apply(this, arguments);
+    return _ref5.apply(this, arguments);
   };
 })();
 
 const next = exports.next = (() => {
-  var _ref5 = _asyncToGenerator(function* (folderId, currentUrl) {
+  var _ref6 = _asyncToGenerator(function* (folderId, currentUrl) {
     const items = yield getItems(folderId);
     return items.find(function (e) {
       return e.url !== currentUrl;
@@ -8776,7 +8789,7 @@ const next = exports.next = (() => {
   });
 
   return function next(_x5, _x6) {
-    return _ref5.apply(this, arguments);
+    return _ref6.apply(this, arguments);
   };
 })();
 
@@ -24421,6 +24434,10 @@ var _Chart = __webpack_require__(274);
 
 var _Chart2 = _interopRequireDefault(_Chart);
 
+var _ValidTabs = __webpack_require__(665);
+
+var _ValidTabs2 = _interopRequireDefault(_ValidTabs);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
@@ -24431,6 +24448,7 @@ class Popup extends _react2.default.Component {
 
     return _temp = _this = super(...args), this.state = {
       activeTab: null,
+      validTabs: null,
       queueFolderId: null,
       archiveFolderId: null,
       foundBookmark: null,
@@ -24471,7 +24489,7 @@ class Popup extends _react2.default.Component {
         });
       }
     }), this.handleNext = _asyncToGenerator(function* () {
-      const { activeTab, nextInQueue } = _this.state;
+      const { nextInQueue } = _this.state;
       if (nextInQueue) {
         _webextensionPolyfill2.default.tabs.update(null, {
           url: nextInQueue.url
@@ -24486,6 +24504,7 @@ class Popup extends _react2.default.Component {
 
     return _asyncToGenerator(function* () {
       const activeTab = yield (0, _util.getActiveTab)();
+      const validTabs = yield (0, _util.getValidTabs)();
       const { url = '' } = activeTab || {};
       const queueFolderId = yield (0, _util.getFolderId)(_constants.QUEUE_FOLDER_NAME);
       const archiveFolderId = yield (0, _util.getFolderId)(_constants.ARCHIVE_FOLDER_NAME);
@@ -24498,13 +24517,22 @@ class Popup extends _react2.default.Component {
         archiveFolderId,
         foundBookmark,
         foundArchive,
-        nextInQueue
+        nextInQueue,
+        validTabs
       }, (yield (0, _statistics.getStatistics)(queueFolderId, archiveFolderId))));
     })();
   }
 
+  // find = async url => {
+  //   const { queueFolderId, archiveFolderId } = this.state;
+  //   const foundBookmark = await find(queueFolderId, activeTab.url);
+  //   const foundArchive = await find(archiveFolderId, activeTab.url);
+  //   return { foundBookmark, foundArchive };
+  // }
+
+
   render() {
-    const { activeTab, foundBookmark, foundArchive, queuedToday, archivedToday, totalQueued, totalArchived, nextInQueue, data } = this.state;
+    const { activeTab, foundBookmark, foundArchive, queuedToday, archivedToday, totalQueued, totalArchived, nextInQueue, data, validTabs } = this.state;
     const isUrlValid = activeTab !== null;
 
     return _react2.default.createElement(
@@ -44408,6 +44436,62 @@ function baseSum(array, iteratee) {
   axisComponents: [{ axisType: 'xAxis', AxisComp: __WEBPACK_IMPORTED_MODULE_5__cartesian_XAxis__["a" /* default */] }, { axisType: 'yAxis', AxisComp: __WEBPACK_IMPORTED_MODULE_6__cartesian_YAxis__["a" /* default */] }, { axisType: 'zAxis', AxisComp: __WEBPACK_IMPORTED_MODULE_7__cartesian_ZAxis__["a" /* default */] }],
   formatAxisMap: __WEBPACK_IMPORTED_MODULE_8__util_CartesianUtils__["b" /* formatAxisMap */]
 }));
+
+/***/ }),
+/* 665 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+class ValidTabs extends _react.Component {
+  constructor(...args) {
+    var _temp, _this;
+
+    return _temp = _this = super(...args), this.render = _asyncToGenerator(function* () {
+      const { validTabs = [] } = _this.props;
+      // let decoratedTabs = validTabs;
+      // if(validTabs) {
+      //   decoratedTabs = validTabs.map( t => {
+      //     console.log( find(t.url))
+      //     return ({
+      //       ...t,
+      //       ...find(t.url)
+      //     })
+      //   })
+      // }
+
+
+      return _react2.default.createElement(
+        "div",
+        null,
+        validTabs && validTabs.map(function (e) {
+          return _react2.default.createElement(
+            "button",
+            { className: "buttonSeeItLater" },
+            "See later: ",
+            e.url
+          );
+        })
+      );
+    }), _temp;
+  }
+
+}
+
+exports.default = ValidTabs;
 
 /***/ })
 /******/ ]);

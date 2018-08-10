@@ -3,15 +3,17 @@ import ReactDOM from 'react-dom';
 import browser from 'webextension-polyfill';
 
 import { getStatistics } from './statistics';
-import { getActiveTab, getFolderId, find, next } from './util';
+import { getActiveTab, getValidTabs, getFolderId, find, next } from './util';
 import { QUEUE_FOLDER_NAME, ARCHIVE_FOLDER_NAME } from './constants';
 import Buttons from './Buttons';
 import Chart from './Chart';
+import ValidTabs from './ValidTabs';
 
 class Popup extends React.Component {
 
   state = {
     activeTab: null,
+    validTabs: null,
     queueFolderId: null,
     archiveFolderId: null,
     foundBookmark: null,
@@ -26,6 +28,7 @@ class Popup extends React.Component {
 
   async componentDidMount() {
     const activeTab = await getActiveTab();
+    const validTabs = await getValidTabs();
     const { url = '' } = activeTab || {};
     const queueFolderId = await getFolderId(QUEUE_FOLDER_NAME);
     const archiveFolderId = await getFolderId(ARCHIVE_FOLDER_NAME);
@@ -39,9 +42,18 @@ class Popup extends React.Component {
       foundBookmark,
       foundArchive,
       nextInQueue,
+      validTabs,
       ...await getStatistics(queueFolderId, archiveFolderId)
     });
   }
+
+  // find = async url => {
+  //   const { queueFolderId, archiveFolderId } = this.state;
+  //   const foundBookmark = await find(queueFolderId, activeTab.url);
+  //   const foundArchive = await find(archiveFolderId, activeTab.url);
+  //   return { foundBookmark, foundArchive };
+  // }
+
 
   handleClick = async () => {
     const { activeTab, queueFolderId, archiveFolderId } = this.state;
@@ -78,7 +90,7 @@ class Popup extends React.Component {
   }
 
   handleNext = async () => {
-    const { activeTab, nextInQueue } = this.state;
+    const { nextInQueue } = this.state;
     if(nextInQueue) {
       browser.tabs.update(
         null,
@@ -91,12 +103,12 @@ class Popup extends React.Component {
   }
   
   render() {
-    const { activeTab, foundBookmark, foundArchive, queuedToday, archivedToday, totalQueued, totalArchived, nextInQueue, data } = this.state;
+    const { activeTab, foundBookmark, foundArchive, queuedToday, archivedToday, totalQueued, totalArchived, nextInQueue, data, validTabs } = this.state;
     const isUrlValid = (activeTab !== null);
 
     return (
       <div align="center">
-        <Buttons  toggle={this.handleClick} isUrlValid={isUrlValid} isQueued={foundBookmark} isArchived={foundArchive} />
+        <Buttons  toggle={this.handleClick} isUrlValid={isUrlValid} isQueued={foundBookmark} isArchived={foundArchive}/>
         <Chart data={data} />
         <small>
           Today you have added {queuedToday} and archived {archivedToday} items. Total added: {totalQueued}. Total archived: {totalArchived}.
@@ -104,6 +116,7 @@ class Popup extends React.Component {
         { nextInQueue && (
           <button onClick={this.handleNext} className="buttonNext">Open next</button>
         )}      
+        {/* <ValidTabs validTabs={validTabs} /> */}
       </div>
     );
   }
