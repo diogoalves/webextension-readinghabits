@@ -75,9 +75,9 @@ var _webextensionPolyfill = __webpack_require__(45);
 
 var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
 
-var _constants = __webpack_require__(91);
+var _constants = __webpack_require__(60);
 
-var _util = __webpack_require__(60);
+var _util = __webpack_require__(61);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -87,22 +87,16 @@ const update = (() => {
   var _ref = _asyncToGenerator(function* () {
     const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
     if (activeTab && (0, _util.isSupportedProtocol)(activeTab.url)) {
+      _webextensionPolyfill2.default.pageAction.show(activeTab.id);
       const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
       const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
       if (queueFolderId && archiveFolderId) {
         const foundBookmark = yield (0, _util.find)(queueFolderId, activeTab.url);
         const foundArchived = yield (0, _util.find)(archiveFolderId, activeTab.url);
-        let prefix = 'empty';
-        if (foundBookmark) prefix = 'queued';
-        if (foundArchived) prefix = 'archived';
-        const icon = {
-          path: {
-            19: `icons/${prefix}-19.png`,
-            38: `icons/${prefix}-38.png`
-          },
-          tabId: activeTab.id
-        };
-        _webextensionPolyfill2.default.browserAction.setIcon(icon);
+        const icon = (0, _util.getIcon)(foundBookmark, foundArchived, activeTab.id);
+
+        _webextensionPolyfill2.default.pageAction.setIcon(icon);
+        _webextensionPolyfill2.default.pageAction.show(activeTab.id);
 
         const { length: queuedItemsQuantity } = yield (0, _util.getItems)(queueFolderId);
         if (queuedItemsQuantity > 0) {
@@ -119,12 +113,38 @@ const update = (() => {
   };
 })();
 
+const toggle = (() => {
+  var _ref2 = _asyncToGenerator(function* (tab) {
+    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
+    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
+    if (queueFolderId && archiveFolderId) {
+      const foundBookmark = yield (0, _util.find)(queueFolderId, tab.url);
+      const foundArchive = yield (0, _util.find)(archiveFolderId, tab.url);
+
+      if (foundBookmark && !foundArchive) {
+        const archivedDate = Date.now();
+        yield _webextensionPolyfill2.default.bookmarks.update(foundBookmark.id, { title: `${foundBookmark.title}[${archivedDate}]` });
+        yield _webextensionPolyfill2.default.bookmarks.move(foundBookmark.id, { parentId: archiveFolderId });
+      } else if (foundBookmark && foundArchive) yield _webextensionPolyfill2.default.bookmarks.remove(foundBookmark.id);else if (!foundBookmark && foundArchive) {
+        const cleanedTitle = foundArchive.title.substring(0, foundArchive.title.length - 15);
+        yield _webextensionPolyfill2.default.bookmarks.update(foundArchive.id, { title: cleanedTitle });
+        yield _webextensionPolyfill2.default.bookmarks.move(foundArchive.id, { parentId: queueFolderId });
+      } else if (!foundBookmark && !foundArchive) yield _webextensionPolyfill2.default.bookmarks.create({ parentId: queueFolderId, title: tab.title, url: tab.url });
+    }
+  });
+
+  return function toggle(_x) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
 _webextensionPolyfill2.default.bookmarks.onCreated.addListener(update);
 _webextensionPolyfill2.default.bookmarks.onMoved.addListener(update);
 _webextensionPolyfill2.default.bookmarks.onRemoved.addListener(update);
 _webextensionPolyfill2.default.tabs.onUpdated.addListener(update);
 _webextensionPolyfill2.default.tabs.onActivated.addListener(update);
 _webextensionPolyfill2.default.windows.onFocusChanged.addListener(update);
+_webextensionPolyfill2.default.pageAction.onClicked.addListener(toggle);
 
 update();
 
@@ -1340,11 +1360,27 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.convertDate = exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+const QUEUE_FOLDER_NAME = exports.QUEUE_FOLDER_NAME = 'READ IT LATER';
+const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
+
+/***/ }),
+
+/***/ 61:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getIcon = exports.convertDate = exports.next = exports.find = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
 var _webextensionPolyfill = __webpack_require__(45);
 
 var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
+
+var _constants = __webpack_require__(60);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1401,19 +1437,31 @@ const getFolderId = exports.getFolderId = (() => {
   };
 })();
 
+const getFoldersIds = exports.getFoldersIds = (() => {
+  var _ref4 = _asyncToGenerator(function* () {
+    const queueFolderId = yield getFolderId(_constants.QUEUE_FOLDER_NAME);
+    const archiveFolderId = yield getFolderId(_constants.ARCHIVE_FOLDER_NAME);
+    return { queueFolderId, archiveFolderId };
+  });
+
+  return function getFoldersIds() {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
 const getItems = exports.getItems = (() => {
-  var _ref4 = _asyncToGenerator(function* (folderId) {
+  var _ref5 = _asyncToGenerator(function* (folderId) {
     const [result] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(folderId);
     return result.children;
   });
 
   return function getItems(_x2) {
-    return _ref4.apply(this, arguments);
+    return _ref5.apply(this, arguments);
   };
 })();
 
 const find = exports.find = (() => {
-  var _ref5 = _asyncToGenerator(function* (folderId, url) {
+  var _ref6 = _asyncToGenerator(function* (folderId, url) {
     const items = yield getItems(folderId);
     return items.find(function (e) {
       return e.url === url;
@@ -1421,20 +1469,21 @@ const find = exports.find = (() => {
   });
 
   return function find(_x3, _x4) {
-    return _ref5.apply(this, arguments);
+    return _ref6.apply(this, arguments);
   };
 })();
 
 const next = exports.next = (() => {
-  var _ref6 = _asyncToGenerator(function* (folderId, currentUrl) {
-    const items = yield getItems(folderId);
-    return items.find(function (e) {
-      return e.url !== currentUrl;
-    });
+  var _ref7 = _asyncToGenerator(function* () {
+    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
+    if (queueFolderId) {
+      const queue = yield getItems(queueFolderId);
+      return queue[0];
+    }
   });
 
-  return function next(_x5, _x6) {
-    return _ref6.apply(this, arguments);
+  return function next() {
+    return _ref7.apply(this, arguments);
   };
 })();
 
@@ -1449,19 +1498,19 @@ const convertDate = exports.convertDate = date => {
   return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
 };
 
-/***/ }),
-
-/***/ 91:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-const QUEUE_FOLDER_NAME = exports.QUEUE_FOLDER_NAME = 'READ IT LATER';
-const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
+const getIcon = exports.getIcon = (foundBookmark, foundArchived, tabId) => {
+  let prefix = 'empty';
+  if (foundBookmark) prefix = 'queued';
+  if (foundArchived) prefix = 'archived';
+  const icon = {
+    path: {
+      19: `icons/${prefix}-19.png`,
+      38: `icons/${prefix}-38.png`
+    },
+    tabId
+  };
+  return icon;
+};
 
 /***/ })
 

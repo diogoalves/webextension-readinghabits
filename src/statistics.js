@@ -1,6 +1,7 @@
-import { getItems, convertDate } from './util';
+import { getItems, convertDate, getFoldersIds } from './util';
 
-export const getStatistics = async (queueFolderId, archiveFolderId) => {
+export const getStatistics = async () => {
+  const { queueFolderId, archiveFolderId } = await getFoldersIds();
   const queued = await getItems(queueFolderId);
   const archived = await getItems(archiveFolderId);
   const today = new Date().toLocaleDateString();
@@ -49,7 +50,6 @@ const perDay = (queuedPerDay, archivedPerDay) => {
     }
     return acc;
   }, step1 );
-  console.log(step2)
   const step3 = Object.values(step2);
   const step4 = step3.sort( (a,b) => {
     if(a.date > b.date) return 1;

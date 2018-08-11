@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill';
+import { QUEUE_FOLDER_NAME, ARCHIVE_FOLDER_NAME } from './constants';
 
 export const isSupportedProtocol = urlString => {
   var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
@@ -31,6 +32,12 @@ export const getFolderId = async folderName => {
   }
 }
 
+export const getFoldersIds = async () => {
+  const queueFolderId = await getFolderId(QUEUE_FOLDER_NAME);
+  const archiveFolderId = await getFolderId(ARCHIVE_FOLDER_NAME);
+  return { queueFolderId, archiveFolderId };
+};
+
 export const getItems = async folderId => {
   const  [ result ] = await browser.bookmarks.getSubTree(folderId);
   return result.children;
@@ -41,9 +48,12 @@ export const find = async (folderId, url) => {
   return items.find( e => e.url === url);
 }
 
-export const next = async (folderId, currentUrl) => {
-  const items = await getItems(folderId);
-  return items.find( e => e.url !== currentUrl);
+export const next = async () => {
+  const [ { id: queueFolderId } ]= await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});
+  if(queueFolderId) {
+    const queue = await getItems(queueFolderId);
+    return queue[0];
+  }
 }
 
 export const convertDate = date => {
@@ -56,3 +66,19 @@ export const convertDate = date => {
 
   return yyyy + '-' + (mmChars[1]?mm:"0"+mmChars[0]) + '-' + (ddChars[1]?dd:"0"+ddChars[0]);
 }
+
+export const getIcon = (foundBookmark, foundArchived, tabId) => {
+  let prefix = 'empty';
+  if(foundBookmark) prefix = 'queued';
+  if(foundArchived) prefix = 'archived';
+  const icon = {
+    path: {
+      19: `icons/${prefix}-19.png`,
+      38: `icons/${prefix}-38.png`
+    },
+    tabId
+  };
+  return icon;
+  
+}
+
