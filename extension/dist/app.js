@@ -8695,7 +8695,7 @@ var ErrorBar = (_temp = _class = function (_Component) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.convertDate = exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+exports.isAndroid = exports.convertDate = exports.next = exports.find = exports.getItems = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
 var _webextensionPolyfill = __webpack_require__(45);
 
@@ -8803,6 +8803,21 @@ const convertDate = exports.convertDate = date => {
 
   return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
 };
+
+const isAndroid = exports.isAndroid = (() => {
+  var _ref7 = _asyncToGenerator(function* () {
+    const platformInfo = yield _webextensionPolyfill2.default.runtime.getPlatformInfo();
+    if (!platformInfo || platformInfo.ps === "android") {
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  return function isAndroid() {
+    return _ref7.apply(this, arguments);
+  };
+})();
 
 /***/ }),
 /* 61 */
@@ -24442,7 +24457,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-class Popup extends _react2.default.Component {
+class App extends _react2.default.Component {
   constructor(...args) {
     var _temp, _this;
 
@@ -24458,7 +24473,8 @@ class Popup extends _react2.default.Component {
       archivedToday: 2,
       totalQueued: 3,
       totalArchived: 4,
-      data: null
+      data: null,
+      mobile: true
     }, this.handleClick = _asyncToGenerator(function* () {
       const { activeTab, queueFolderId, archiveFolderId } = _this.state;
       if (activeTab) {
@@ -24511,6 +24527,7 @@ class Popup extends _react2.default.Component {
       const foundBookmark = yield (0, _util.find)(queueFolderId, url);
       const foundArchive = yield (0, _util.find)(archiveFolderId, url);
       const nextInQueue = yield (0, _util.next)(queueFolderId, url);
+      const mobile = yield (0, _util.isAndroid)();
       _this2.setState(_extends({
         activeTab,
         queueFolderId,
@@ -24518,7 +24535,8 @@ class Popup extends _react2.default.Component {
         foundBookmark,
         foundArchive,
         nextInQueue,
-        validTabs
+        validTabs,
+        mobile
       }, (yield (0, _statistics.getStatistics)(queueFolderId, archiveFolderId))));
     })();
   }
@@ -24534,14 +24552,15 @@ class Popup extends _react2.default.Component {
   render() {
     const { activeTab, foundBookmark, foundArchive, queuedToday, archivedToday, totalQueued, totalArchived, nextInQueue, data, validTabs } = this.state;
     const isUrlValid = activeTab !== null;
-
+    console.log("browser.runtime.PlatformInfo");
+    console.log(this.state.platformInfo);
     return _react2.default.createElement(
       'div',
       { align: 'center' },
       _react2.default.createElement(_Buttons2.default, { toggle: this.handleClick, isUrlValid: isUrlValid, isQueued: foundBookmark, isArchived: foundArchive }),
       _react2.default.createElement(_Chart2.default, { data: data }),
       _react2.default.createElement(
-        'small',
+        'h1',
         null,
         'Today you have added ',
         queuedToday,
@@ -24557,12 +24576,17 @@ class Popup extends _react2.default.Component {
         'button',
         { onClick: this.handleNext, className: 'buttonNext' },
         'Open next'
+      ),
+      this.state.mobile && _react2.default.createElement(
+        'h1',
+        null,
+        'ANDROID'
       )
     );
   }
 }
 
-_reactDom2.default.render(_react2.default.createElement(Popup, null), document.getElementById('app'));
+_reactDom2.default.render(_react2.default.createElement(App, null), document.getElementById('app'));
 
 /***/ }),
 /* 262 */
@@ -44495,4 +44519,4 @@ exports.default = ValidTabs;
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=popup.js.map
+//# sourceMappingURL=app.js.map

@@ -4,6 +4,11 @@
   "version": "0.1.1",
   "description": "A simple reading habits extension",
   "homepage_url": "https://github.com/diogoalves/webextension-readinghabits",
+  "applications": {
+    "gecko": {
+       "id": "reading-habits@dj.ca"
+    }
+ },
   "icons": {
     "48": "icons/empty-48.png",
     "96": "icons/empty-96.png"
@@ -18,7 +23,7 @@
     "browser_style": true,
     "default_icon": "icons/empty-38.png",
     "default_title": "Reading habits",
-    "default_popup": "popup.html"
+    "default_popup": "app.html"
   },
 
   "background": {

@@ -4,7 +4,7 @@ const webpack = require('webpack');
 module.exports = {
   entry: {
     background: './src/background.js',
-    popup: './src/popup.js',
+    app: './src/App.js',
   },
   output: {
     // This copies each source entry into the extension dist folder named
