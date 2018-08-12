@@ -68,168 +68,6 @@
 /***/ 38:
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
-
-var _webextensionPolyfill = __webpack_require__(46);
-
-var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
-
-var _constants = __webpack_require__(47);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
-  var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
-  var url = document.createElement('a');
-  url.href = urlString;
-  return supportedProtocols.indexOf(url.protocol) != -1;
-};
-
-const getActiveTab = exports.getActiveTab = (() => {
-  var _ref = _asyncToGenerator(function* () {
-    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
-    if (activeTab && isSupportedProtocol(activeTab.url)) {
-      return activeTab;
-    } else {
-      return null;
-    }
-  });
-
-  return function getActiveTab() {
-    return _ref.apply(this, arguments);
-  };
-})();
-
-const getValidTabs = exports.getValidTabs = (() => {
-  var _ref2 = _asyncToGenerator(function* () {
-    const tabs = yield _webextensionPolyfill2.default.tabs.query({});
-    return tabs.filter(function (e) {
-      return isSupportedProtocol(e.url);
-    });
-  });
-
-  return function getValidTabs() {
-    return _ref2.apply(this, arguments);
-  };
-})();
-
-const getFolderId = exports.getFolderId = (() => {
-  var _ref3 = _asyncToGenerator(function* (folderName) {
-    const [found] = yield _webextensionPolyfill2.default.bookmarks.search({ title: folderName });
-    if (found) {
-      return found.id;
-    } else {
-      const newFolder = yield _webextensionPolyfill2.default.bookmarks.create({ title: folderName });
-      return newFolder.id;
-    }
-  });
-
-  return function getFolderId(_x) {
-    return _ref3.apply(this, arguments);
-  };
-})();
-
-const getFoldersIds = exports.getFoldersIds = (() => {
-  var _ref4 = _asyncToGenerator(function* () {
-    const queueFolderId = yield getFolderId(_constants.QUEUE_FOLDER_NAME);
-    const archiveFolderId = yield getFolderId(_constants.ARCHIVE_FOLDER_NAME);
-    return { queueFolderId, archiveFolderId };
-  });
-
-  return function getFoldersIds() {
-    return _ref4.apply(this, arguments);
-  };
-})();
-
-const getItems = exports.getItems = (() => {
-  var _ref5 = _asyncToGenerator(function* (folderId) {
-    const [result] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(folderId);
-    return result.children;
-  });
-
-  return function getItems(_x2) {
-    return _ref5.apply(this, arguments);
-  };
-})();
-
-const find = exports.find = (() => {
-  var _ref6 = _asyncToGenerator(function* (folderId, url) {
-    const items = yield getItems(folderId);
-    return items.find(function (e) {
-      return e.url === url;
-    });
-  });
-
-  return function find(_x3, _x4) {
-    return _ref6.apply(this, arguments);
-  };
-})();
-
-const getUrlStatus = exports.getUrlStatus = (() => {
-  var _ref7 = _asyncToGenerator(function* () {
-    const activeTab = yield getActiveTab();
-    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
-    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
-    if (queueFolderId && archiveFolderId) {
-      const isQueued = yield find(queueFolderId, activeTab.url);
-      const isArchived = yield find(archiveFolderId, activeTab.url);
-      const queue = yield getItems(queueFolderId);
-      const nextInQueue = queue.find(function (e) {
-        return e.url !== activeTab.url;
-      });
-      return {
-        valid: activeTab !== null,
-        activeTab,
-        isQueued,
-        isArchived,
-        nextUrl: nextInQueue.url
-      };
-    }
-  });
-
-  return function getUrlStatus() {
-    return _ref7.apply(this, arguments);
-  };
-})();
-
-const convertDate = exports.convertDate = date => {
-  var yyyy = date.getFullYear().toString();
-  var mm = (date.getMonth() + 1).toString();
-  var dd = date.getDate().toString();
-
-  var mmChars = mm.split('');
-  var ddChars = dd.split('');
-
-  return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
-};
-
-const getIcon = exports.getIcon = (foundBookmark, foundArchived, tabId) => {
-  let prefix = 'empty';
-  if (foundBookmark) prefix = 'queued';
-  if (foundArchived) prefix = 'archived';
-  const icon = {
-    path: {
-      19: `icons/${prefix}-19.png`,
-      38: `icons/${prefix}-38.png`
-    },
-    tabId
-  };
-  return icon;
-};
-
-/***/ }),
-
-/***/ 46:
-/***/ (function(module, exports, __webpack_require__) {
-
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
   if (true) {
     !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
@@ -1428,7 +1266,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 /***/ }),
 
-/***/ 47:
+/***/ 46:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1439,6 +1277,176 @@ Object.defineProperty(exports, "__esModule", {
 });
 const QUEUE_FOLDER_NAME = exports.QUEUE_FOLDER_NAME = 'READ IT LATER';
 const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
+
+/***/ }),
+
+/***/ 47:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+
+var _webextensionPolyfill = __webpack_require__(38);
+
+var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
+
+var _constants = __webpack_require__(46);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
+  var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
+  var url = document.createElement('a');
+  url.href = urlString;
+  return supportedProtocols.indexOf(url.protocol) != -1;
+};
+
+const getActiveTab = exports.getActiveTab = (() => {
+  var _ref = _asyncToGenerator(function* () {
+    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
+    if (activeTab && isSupportedProtocol(activeTab.url)) {
+      return activeTab;
+    } else {
+      return null;
+    }
+  });
+
+  return function getActiveTab() {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+const getValidTabs = exports.getValidTabs = (() => {
+  var _ref2 = _asyncToGenerator(function* () {
+    const tabs = yield _webextensionPolyfill2.default.tabs.query({});
+    return tabs.filter(function (e) {
+      return isSupportedProtocol(e.url);
+    });
+  });
+
+  return function getValidTabs() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+const getFolderId = exports.getFolderId = (() => {
+  var _ref3 = _asyncToGenerator(function* (folderName) {
+    const [found] = yield _webextensionPolyfill2.default.bookmarks.search({ title: folderName });
+    if (found) {
+      return found.id;
+    } else {
+      const newFolder = yield _webextensionPolyfill2.default.bookmarks.create({ title: folderName });
+      return newFolder.id;
+    }
+  });
+
+  return function getFolderId(_x) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+const getFoldersIds = exports.getFoldersIds = (() => {
+  var _ref4 = _asyncToGenerator(function* () {
+    const queueFolderId = yield getFolderId(_constants.QUEUE_FOLDER_NAME);
+    const archiveFolderId = yield getFolderId(_constants.ARCHIVE_FOLDER_NAME);
+    return { queueFolderId, archiveFolderId };
+  });
+
+  return function getFoldersIds() {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+const getItems = exports.getItems = (() => {
+  var _ref5 = _asyncToGenerator(function* (folderId) {
+    const [result] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(folderId);
+    return result.children;
+  });
+
+  return function getItems(_x2) {
+    return _ref5.apply(this, arguments);
+  };
+})();
+
+const find = exports.find = (() => {
+  var _ref6 = _asyncToGenerator(function* (folderId, url) {
+    const items = yield getItems(folderId);
+    return items.find(function (e) {
+      return e.url === url;
+    });
+  });
+
+  return function find(_x3, _x4) {
+    return _ref6.apply(this, arguments);
+  };
+})();
+
+const getUrlStatus = exports.getUrlStatus = (() => {
+  var _ref7 = _asyncToGenerator(function* () {
+    const activeTab = yield getActiveTab();
+    const { queueFolderId, archiveFolderId } = yield getFoldersIds();
+    if (activeTab) {
+      const isQueued = yield find(queueFolderId, activeTab.url);
+      const isArchived = yield find(archiveFolderId, activeTab.url);
+      const queue = yield getItems(queueFolderId);
+      const nextInQueue = queue.find(function (e) {
+        return e.url !== activeTab.url;
+      });
+      return {
+        valid: activeTab !== null,
+        activeTab,
+        isQueued,
+        isArchived,
+        nextUrl: nextInQueue ? nextInQueue.url : null
+      };
+    } else {
+      const queue = yield getItems(queueFolderId);
+      return {
+        valid: false,
+        activeTab: null,
+        isQueued: false,
+        isArchived: false,
+        nextUrl: queue[0]
+      };
+    }
+  });
+
+  return function getUrlStatus() {
+    return _ref7.apply(this, arguments);
+  };
+})();
+
+const convertDate = exports.convertDate = date => {
+  var yyyy = date.getFullYear().toString();
+  var mm = (date.getMonth() + 1).toString();
+  var dd = date.getDate().toString();
+
+  var mmChars = mm.split('');
+  var ddChars = dd.split('');
+
+  return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
+};
+
+const getIcon = exports.getIcon = (foundBookmark, foundArchived, tabId) => {
+  let prefix = 'empty';
+  if (foundBookmark) prefix = 'queued';
+  if (foundArchived) prefix = 'archived';
+  const icon = {
+    path: {
+      19: `icons/${prefix}-19.png`,
+      38: `icons/${prefix}-38.png`
+    },
+    tabId
+  };
+  return icon;
+};
 
 /***/ }),
 
@@ -1453,13 +1461,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.toggle = undefined;
 
-var _webextensionPolyfill = __webpack_require__(46);
+var _webextensionPolyfill = __webpack_require__(38);
 
 var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
 
-var _constants = __webpack_require__(47);
+var _constants = __webpack_require__(46);
 
-var _util = __webpack_require__(38);
+var _util = __webpack_require__(47);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

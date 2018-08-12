@@ -50,9 +50,8 @@ export const find = async (folderId, url) => {
 
 export const getUrlStatus = async () => {
   const activeTab = await getActiveTab();
-  const [ { id: queueFolderId } ]= await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});
-  const [ { id: archiveFolderId } ] = await browser.bookmarks.search({title: ARCHIVE_FOLDER_NAME});
-  if(queueFolderId && archiveFolderId) {
+  const { queueFolderId, archiveFolderId } = await getFoldersIds();
+  if(activeTab) {
     const isQueued = await find(queueFolderId, activeTab.url);
     const isArchived = await find(archiveFolderId, activeTab.url);
     const queue = await getItems(queueFolderId);
@@ -62,7 +61,16 @@ export const getUrlStatus = async () => {
       activeTab,
       isQueued,
       isArchived,
-      nextUrl: nextInQueue.url
+      nextUrl: nextInQueue ? nextInQueue.url : null
+    });
+  } else {
+    const queue = await getItems(queueFolderId);
+    return ({
+      valid: false,
+      activeTab: null,
+      isQueued: false,
+      isArchived: false,
+      nextUrl: queue[0]
     });
   }
 }

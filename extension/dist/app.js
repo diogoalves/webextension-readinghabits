@@ -6214,857 +6214,6 @@ var Dot = Object(__WEBPACK_IMPORTED_MODULE_3__util_PureRender__["a" /* default *
 /* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
-
-var _webextensionPolyfill = __webpack_require__(46);
-
-var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
-
-var _constants = __webpack_require__(47);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
-  var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
-  var url = document.createElement('a');
-  url.href = urlString;
-  return supportedProtocols.indexOf(url.protocol) != -1;
-};
-
-const getActiveTab = exports.getActiveTab = (() => {
-  var _ref = _asyncToGenerator(function* () {
-    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
-    if (activeTab && isSupportedProtocol(activeTab.url)) {
-      return activeTab;
-    } else {
-      return null;
-    }
-  });
-
-  return function getActiveTab() {
-    return _ref.apply(this, arguments);
-  };
-})();
-
-const getValidTabs = exports.getValidTabs = (() => {
-  var _ref2 = _asyncToGenerator(function* () {
-    const tabs = yield _webextensionPolyfill2.default.tabs.query({});
-    return tabs.filter(function (e) {
-      return isSupportedProtocol(e.url);
-    });
-  });
-
-  return function getValidTabs() {
-    return _ref2.apply(this, arguments);
-  };
-})();
-
-const getFolderId = exports.getFolderId = (() => {
-  var _ref3 = _asyncToGenerator(function* (folderName) {
-    const [found] = yield _webextensionPolyfill2.default.bookmarks.search({ title: folderName });
-    if (found) {
-      return found.id;
-    } else {
-      const newFolder = yield _webextensionPolyfill2.default.bookmarks.create({ title: folderName });
-      return newFolder.id;
-    }
-  });
-
-  return function getFolderId(_x) {
-    return _ref3.apply(this, arguments);
-  };
-})();
-
-const getFoldersIds = exports.getFoldersIds = (() => {
-  var _ref4 = _asyncToGenerator(function* () {
-    const queueFolderId = yield getFolderId(_constants.QUEUE_FOLDER_NAME);
-    const archiveFolderId = yield getFolderId(_constants.ARCHIVE_FOLDER_NAME);
-    return { queueFolderId, archiveFolderId };
-  });
-
-  return function getFoldersIds() {
-    return _ref4.apply(this, arguments);
-  };
-})();
-
-const getItems = exports.getItems = (() => {
-  var _ref5 = _asyncToGenerator(function* (folderId) {
-    const [result] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(folderId);
-    return result.children;
-  });
-
-  return function getItems(_x2) {
-    return _ref5.apply(this, arguments);
-  };
-})();
-
-const find = exports.find = (() => {
-  var _ref6 = _asyncToGenerator(function* (folderId, url) {
-    const items = yield getItems(folderId);
-    return items.find(function (e) {
-      return e.url === url;
-    });
-  });
-
-  return function find(_x3, _x4) {
-    return _ref6.apply(this, arguments);
-  };
-})();
-
-const getUrlStatus = exports.getUrlStatus = (() => {
-  var _ref7 = _asyncToGenerator(function* () {
-    const activeTab = yield getActiveTab();
-    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
-    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
-    if (queueFolderId && archiveFolderId) {
-      const isQueued = yield find(queueFolderId, activeTab.url);
-      const isArchived = yield find(archiveFolderId, activeTab.url);
-      const queue = yield getItems(queueFolderId);
-      const nextInQueue = queue.find(function (e) {
-        return e.url !== activeTab.url;
-      });
-      return {
-        valid: activeTab !== null,
-        activeTab,
-        isQueued,
-        isArchived,
-        nextUrl: nextInQueue.url
-      };
-    }
-  });
-
-  return function getUrlStatus() {
-    return _ref7.apply(this, arguments);
-  };
-})();
-
-const convertDate = exports.convertDate = date => {
-  var yyyy = date.getFullYear().toString();
-  var mm = (date.getMonth() + 1).toString();
-  var dd = date.getDate().toString();
-
-  var mmChars = mm.split('');
-  var ddChars = dd.split('');
-
-  return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
-};
-
-const getIcon = exports.getIcon = (foundBookmark, foundArchived, tabId) => {
-  let prefix = 'empty';
-  if (foundBookmark) prefix = 'queued';
-  if (foundArchived) prefix = 'archived';
-  const icon = {
-    path: {
-      19: `icons/${prefix}-19.png`,
-      38: `icons/${prefix}-38.png`
-    },
-    tabId
-  };
-  return icon;
-};
-
-/***/ }),
-/* 39 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__baseGetTag_js__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__isObjectLike_js__ = __webpack_require__(22);
-
-
-
-/** `Object#toString` result references. */
-var symbolTag = '[object Symbol]';
-
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (Object(__WEBPACK_IMPORTED_MODULE_1__isObjectLike_js__["a" /* default */])(value) && Object(__WEBPACK_IMPORTED_MODULE_0__baseGetTag_js__["a" /* default */])(value) == symbolTag);
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (isSymbol);
-
-
-/***/ }),
-/* 40 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/**
- * This method returns the first argument it receives.
- *
- * @static
- * @since 0.1.0
- * @memberOf _
- * @category Util
- * @param {*} value Any value.
- * @returns {*} Returns `value`.
- * @example
- *
- * var object = { 'a': 1 };
- *
- * console.log(_.identity(object) === object);
- * // => true
- */
-function identity(value) {
-  return value;
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (identity);
-
-
-/***/ }),
-/* 41 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony default export */ __webpack_exports__["a"] = (function(a, b) {
-  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-});
-
-
-/***/ }),
-/* 42 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_classnames__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_classnames___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_classnames__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_react_smooth__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_react_smooth___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_react_smooth__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__util_PureRender__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__ = __webpack_require__(2);
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _class, _class2, _temp2;
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
- * @fileOverview Rectangle
- */
-
-
-
-
-
-
-
-var getRectangePath = function getRectangePath(x, y, width, height, radius) {
-  var maxRadius = Math.min(Math.abs(width) / 2, Math.abs(height) / 2);
-  var sign = height >= 0 ? 1 : -1;
-  var clockWise = height >= 0 ? 1 : 0;
-  var path = void 0;
-
-  if (maxRadius > 0 && radius instanceof Array) {
-    var newRadius = [];
-    for (var i = 0, len = 4; i < len; i++) {
-      newRadius[i] = radius[i] > maxRadius ? maxRadius : radius[i];
-    }
-
-    path = 'M' + x + ',' + (y + sign * newRadius[0]);
-
-    if (newRadius[0] > 0) {
-      path += 'A ' + newRadius[0] + ',' + newRadius[0] + ',0,0,' + clockWise + ',' + (x + newRadius[0]) + ',' + y;
-    }
-
-    path += 'L ' + (x + width - newRadius[1]) + ',' + y;
-
-    if (newRadius[1] > 0) {
-      path += 'A ' + newRadius[1] + ',' + newRadius[1] + ',0,0,' + clockWise + ',\n        ' + (x + width) + ',' + (y + sign * newRadius[1]);
-    }
-    path += 'L ' + (x + width) + ',' + (y + height - sign * newRadius[2]);
-
-    if (newRadius[2] > 0) {
-      path += 'A ' + newRadius[2] + ',' + newRadius[2] + ',0,0,' + clockWise + ',\n        ' + (x + width - newRadius[2]) + ',' + (y + height);
-    }
-    path += 'L ' + (x + newRadius[3]) + ',' + (y + height);
-
-    if (newRadius[3] > 0) {
-      path += 'A ' + newRadius[3] + ',' + newRadius[3] + ',0,0,' + clockWise + ',\n        ' + x + ',' + (y + height - sign * newRadius[3]);
-    }
-    path += 'Z';
-  } else if (maxRadius > 0 && radius === +radius && radius > 0) {
-    var _newRadius = Math.min(maxRadius, radius);
-
-    path = 'M ' + x + ',' + (y + sign * _newRadius) + '\n            A ' + _newRadius + ',' + _newRadius + ',0,0,' + clockWise + ',' + (x + _newRadius) + ',' + y + '\n            L ' + (x + width - _newRadius) + ',' + y + '\n            A ' + _newRadius + ',' + _newRadius + ',0,0,' + clockWise + ',' + (x + width) + ',' + (y + sign * _newRadius) + '\n            L ' + (x + width) + ',' + (y + height - sign * _newRadius) + '\n            A ' + _newRadius + ',' + _newRadius + ',0,0,' + clockWise + ',' + (x + width - _newRadius) + ',' + (y + height) + '\n            L ' + (x + _newRadius) + ',' + (y + height) + '\n            A ' + _newRadius + ',' + _newRadius + ',0,0,' + clockWise + ',' + x + ',' + (y + height - sign * _newRadius) + ' Z';
-  } else {
-    path = 'M ' + x + ',' + y + ' h ' + width + ' v ' + height + ' h ' + -width + ' Z';
-  }
-
-  return path;
-};
-
-var Rectangle = Object(__WEBPACK_IMPORTED_MODULE_4__util_PureRender__["a" /* default */])(_class = (_temp2 = _class2 = function (_Component) {
-  _inherits(Rectangle, _Component);
-
-  function Rectangle() {
-    var _ref;
-
-    var _temp, _this, _ret;
-
-    _classCallCheck(this, Rectangle);
-
-    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
-    return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = Rectangle.__proto__ || Object.getPrototypeOf(Rectangle)).call.apply(_ref, [this].concat(args))), _this), _this.state = {
-      totalLength: -1
-    }, _temp), _possibleConstructorReturn(_this, _ret);
-  }
-
-  _createClass(Rectangle, [{
-    key: 'componentDidMount',
-
-
-    /* eslint-disable  react/no-did-mount-set-state */
-    value: function componentDidMount() {
-      if (this.node && this.node.getTotalLength) {
-        try {
-          var totalLength = this.node.getTotalLength();
-
-          if (totalLength) {
-            this.setState({
-              totalLength: totalLength
-            });
-          }
-        } catch (err) {
-          // calculate total length error
-        }
-      }
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var _this2 = this;
-
-      var _props = this.props,
-          x = _props.x,
-          y = _props.y,
-          width = _props.width,
-          height = _props.height,
-          radius = _props.radius,
-          className = _props.className;
-      var totalLength = this.state.totalLength;
-      var _props2 = this.props,
-          animationEasing = _props2.animationEasing,
-          animationDuration = _props2.animationDuration,
-          animationBegin = _props2.animationBegin,
-          isAnimationActive = _props2.isAnimationActive,
-          isUpdateAnimationActive = _props2.isUpdateAnimationActive;
-
-
-      if (x !== +x || y !== +y || width !== +width || height !== +height || width === 0 || height === 0) {
-        return null;
-      }
-
-      var layerClass = __WEBPACK_IMPORTED_MODULE_2_classnames___default()('recharts-rectangle', className);
-
-      if (!isUpdateAnimationActive) {
-        return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('path', _extends({}, Object(__WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["k" /* getPresentationAttributes */])(this.props), Object(__WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["e" /* filterEventAttributes */])(this.props), {
-          className: layerClass,
-          d: getRectangePath(x, y, width, height, radius)
-        }));
-      }
-
-      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-        __WEBPACK_IMPORTED_MODULE_3_react_smooth___default.a,
-        {
-          canBegin: totalLength > 0,
-          from: { width: width, height: height, x: x, y: y },
-          to: { width: width, height: height, x: x, y: y },
-          duration: animationDuration,
-          animationEasing: animationEasing,
-          isActive: isUpdateAnimationActive
-        },
-        function (_ref2) {
-          var currWidth = _ref2.width,
-              currHeight = _ref2.height,
-              currX = _ref2.x,
-              currY = _ref2.y;
-          return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-            __WEBPACK_IMPORTED_MODULE_3_react_smooth___default.a,
-            {
-              canBegin: totalLength > 0,
-              from: '0px ' + (totalLength === -1 ? 1 : totalLength) + 'px',
-              to: totalLength + 'px 0px',
-              attributeName: 'strokeDasharray',
-              begin: animationBegin,
-              duration: animationDuration,
-              isActive: isAnimationActive,
-              easing: animationEasing
-            },
-            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('path', _extends({}, Object(__WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["k" /* getPresentationAttributes */])(_this2.props), Object(__WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["e" /* filterEventAttributes */])(_this2.props), {
-              className: layerClass,
-              d: getRectangePath(currX, currY, currWidth, currHeight, radius),
-              ref: function ref(node) {
-                _this2.node = node;
-              }
-            }))
-          );
-        }
-      );
-    }
-  }]);
-
-  return Rectangle;
-}(__WEBPACK_IMPORTED_MODULE_0_react__["Component"]), _class2.displayName = 'Rectangle', _class2.propTypes = _extends({}, __WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["c" /* PRESENTATION_ATTRIBUTES */], __WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["a" /* EVENT_ATTRIBUTES */], {
-  className: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string,
-  x: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  y: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  width: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  height: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  radius: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.array]),
-  isAnimationActive: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  isUpdateAnimationActive: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  animationBegin: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  animationDuration: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  animationEasing: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['ease', 'ease-in', 'ease-out', 'ease-in-out', 'linear'])
-}), _class2.defaultProps = {
-  x: 0,
-  y: 0,
-  width: 0,
-  height: 0,
-  // The radius of border
-  // The radius of four corners when radius is a number
-  // The radius of left-top, right-top, right-bottom, left-bottom when radius is an array
-  radius: 0,
-  isAnimationActive: false,
-  isUpdateAnimationActive: false,
-  animationBegin: 0,
-  animationDuration: 1500,
-  animationEasing: 'ease'
-}, _temp2)) || _class;
-
-/* harmony default export */ __webpack_exports__["a"] = (Rectangle);
-
-/***/ }),
-/* 43 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash_es_isArray__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lodash_es_isFunction__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_prop_types__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_prop_types__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_d3_shape__ = __webpack_require__(109);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_classnames__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_classnames___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_classnames__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__util_PureRender__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__util_ReactUtils__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__util_DataUtils__ = __webpack_require__(6);
-
-
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _class, _class2, _temp;
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
- * @fileOverview Curve
- */
-
-
-
-
-
-
-
-
-
-var CURVE_FACTORIES = {
-  curveBasisClosed: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["c" /* curveBasisClosed */], curveBasisOpen: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["d" /* curveBasisOpen */], curveBasis: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["b" /* curveBasis */], curveLinearClosed: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["f" /* curveLinearClosed */], curveLinear: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["e" /* curveLinear */],
-  curveMonotoneX: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["g" /* curveMonotoneX */], curveMonotoneY: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["h" /* curveMonotoneY */], curveNatural: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["i" /* curveNatural */], curveStep: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["j" /* curveStep */], curveStepAfter: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["k" /* curveStepAfter */],
-  curveStepBefore: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["l" /* curveStepBefore */]
-};
-
-var defined = function defined(p) {
-  return p.x === +p.x && p.y === +p.y;
-};
-var getX = function getX(p) {
-  return p.x;
-};
-var getY = function getY(p) {
-  return p.y;
-};
-
-var getCurveFactory = function getCurveFactory(type, layout) {
-  if (Object(__WEBPACK_IMPORTED_MODULE_1_lodash_es_isFunction__["a" /* default */])(type)) {
-    return type;
-  }
-
-  var name = 'curve' + type.slice(0, 1).toUpperCase() + type.slice(1);
-
-  if (name === 'curveMonotone' && layout) {
-    return CURVE_FACTORIES['' + name + (layout === 'vertical' ? 'Y' : 'X')];
-  }
-  return CURVE_FACTORIES[name] || __WEBPACK_IMPORTED_MODULE_4_d3_shape__["e" /* curveLinear */];
-};
-
-var Curve = Object(__WEBPACK_IMPORTED_MODULE_6__util_PureRender__["a" /* default */])(_class = (_temp = _class2 = function (_Component) {
-  _inherits(Curve, _Component);
-
-  function Curve() {
-    _classCallCheck(this, Curve);
-
-    return _possibleConstructorReturn(this, (Curve.__proto__ || Object.getPrototypeOf(Curve)).apply(this, arguments));
-  }
-
-  _createClass(Curve, [{
-    key: 'getPath',
-
-    /**
-     * Calculate the path of curve
-     * @return {String} path
-     */
-    value: function getPath() {
-      var _props = this.props,
-          type = _props.type,
-          points = _props.points,
-          baseLine = _props.baseLine,
-          layout = _props.layout,
-          connectNulls = _props.connectNulls;
-
-      var curveFactory = getCurveFactory(type, layout);
-      var formatPoints = connectNulls ? points.filter(function (entry) {
-        return defined(entry);
-      }) : points;
-      var lineFunction = void 0;
-
-      if (Object(__WEBPACK_IMPORTED_MODULE_0_lodash_es_isArray__["a" /* default */])(baseLine)) {
-        var formatBaseLine = connectNulls ? baseLine.filter(function (base) {
-          return defined(base);
-        }) : baseLine;
-        var areaPoints = formatPoints.map(function (entry, index) {
-          return _extends({}, entry, { base: formatBaseLine[index] });
-        });
-        if (layout === 'vertical') {
-          lineFunction = Object(__WEBPACK_IMPORTED_MODULE_4_d3_shape__["a" /* area */])().y(getY).x1(getX).x0(function (d) {
-            return d.base.x;
-          });
-        } else {
-          lineFunction = Object(__WEBPACK_IMPORTED_MODULE_4_d3_shape__["a" /* area */])().x(getX).y1(getY).y0(function (d) {
-            return d.base.y;
-          });
-        }
-        lineFunction.defined(defined).curve(curveFactory);
-
-        return lineFunction(areaPoints);
-      } else if (layout === 'vertical' && Object(__WEBPACK_IMPORTED_MODULE_8__util_DataUtils__["h" /* isNumber */])(baseLine)) {
-        lineFunction = Object(__WEBPACK_IMPORTED_MODULE_4_d3_shape__["a" /* area */])().y(getY).x1(getX).x0(baseLine);
-      } else if (Object(__WEBPACK_IMPORTED_MODULE_8__util_DataUtils__["h" /* isNumber */])(baseLine)) {
-        lineFunction = Object(__WEBPACK_IMPORTED_MODULE_4_d3_shape__["a" /* area */])().x(getX).y1(getY).y0(baseLine);
-      } else {
-        lineFunction = Object(__WEBPACK_IMPORTED_MODULE_4_d3_shape__["m" /* line */])().x(getX).y(getY);
-      }
-
-      lineFunction.defined(defined).curve(curveFactory);
-
-      return lineFunction(formatPoints);
-    }
-  }, {
-    key: 'render',
-    value: function render() {
-      var _props2 = this.props,
-          className = _props2.className,
-          points = _props2.points,
-          path = _props2.path,
-          pathRef = _props2.pathRef;
-
-
-      if ((!points || !points.length) && !path) {
-        return null;
-      }
-
-      var realPath = points && points.length ? this.getPath() : path;
-
-      return __WEBPACK_IMPORTED_MODULE_2_react___default.a.createElement('path', _extends({}, Object(__WEBPACK_IMPORTED_MODULE_7__util_ReactUtils__["k" /* getPresentationAttributes */])(this.props), Object(__WEBPACK_IMPORTED_MODULE_7__util_ReactUtils__["e" /* filterEventAttributes */])(this.props, null, true), {
-        className: __WEBPACK_IMPORTED_MODULE_5_classnames___default()('recharts-curve', className),
-        d: realPath,
-        ref: pathRef
-      }));
-    }
-  }]);
-
-  return Curve;
-}(__WEBPACK_IMPORTED_MODULE_2_react__["Component"]), _class2.displayName = 'Curve', _class2.propTypes = _extends({}, __WEBPACK_IMPORTED_MODULE_7__util_ReactUtils__["c" /* PRESENTATION_ATTRIBUTES */], {
-  className: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.string,
-  type: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.oneOf(['basis', 'basisClosed', 'basisOpen', 'linear', 'linearClosed', 'natural', 'monotoneX', 'monotoneY', 'monotone', 'step', 'stepBefore', 'stepAfter']), __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.func]),
-  layout: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.oneOf(['horizontal', 'vertical']),
-  baseLine: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.array]),
-  points: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.arrayOf(__WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.object),
-  connectNulls: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.bool,
-  path: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.string,
-  pathRef: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.func
-}), _class2.defaultProps = {
-  type: 'linear',
-  points: [],
-  connectNulls: false
-}, _temp)) || _class;
-
-/* harmony default export */ __webpack_exports__["a"] = (Curve);
-
-/***/ }),
-/* 44 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util_PureRender__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util_ReactUtils__ = __webpack_require__(2);
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _class, _class2, _temp;
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
- * @fileOverview X Axis
- */
-
-
-
-
-
-var XAxis = Object(__WEBPACK_IMPORTED_MODULE_2__util_PureRender__["a" /* default */])(_class = (_temp = _class2 = function (_Component) {
-  _inherits(XAxis, _Component);
-
-  function XAxis() {
-    _classCallCheck(this, XAxis);
-
-    return _possibleConstructorReturn(this, (XAxis.__proto__ || Object.getPrototypeOf(XAxis)).apply(this, arguments));
-  }
-
-  _createClass(XAxis, [{
-    key: 'render',
-    value: function render() {
-      return null;
-    }
-  }]);
-
-  return XAxis;
-}(__WEBPACK_IMPORTED_MODULE_0_react__["Component"]), _class2.displayName = 'XAxis', _class2.propTypes = {
-  allowDecimals: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  allowDuplicatedCategory: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  hide: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  // The name of data displayed in the axis
-  name: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
-  // The unit of data displayed in the axis
-  unit: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
-  // The unique id of x-axis
-  xAxisId: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
-  domain: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.arrayOf(__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['auto', 'dataMin', 'dataMax'])])),
-  // The key of data displayed in the axis
-  dataKey: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func]),
-  // The width of axis which is usually calculated internally
-  width: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  // The height of axis, which need to be setted by user
-  height: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  mirror: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  // The orientation of axis
-  orientation: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['top', 'bottom']),
-  type: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['number', 'category']),
-  // Ticks can be any type when the axis is the type of category
-  // Ticks must be numbers when the axis is the type of number
-  ticks: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.array,
-  // The count of ticks
-  tickCount: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  // The formatter function of tick
-  tickFormatter: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
-  padding: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.shape({
-    left: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-    right: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number
-  }),
-  allowDataOverflow: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  scale: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(__WEBPACK_IMPORTED_MODULE_3__util_ReactUtils__["d" /* SCALE_TYPES */]), __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func]),
-  tick: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.element]),
-  axisLine: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object]),
-  tickLine: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object]),
-  minTickGap: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  tickSize: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  interval: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['preserveStart', 'preserveEnd', 'preserveStartEnd'])]),
-  reversed: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool
-}, _class2.defaultProps = {
-  allowDecimals: true,
-  hide: false,
-  orientation: 'bottom',
-  width: 0,
-  height: 30,
-  mirror: false,
-  xAxisId: 0,
-  tickCount: 5,
-  type: 'category',
-  domain: [0, 'auto'],
-  padding: { left: 0, right: 0 },
-  allowDataOverflow: false,
-  scale: 'auto',
-  reversed: false,
-  allowDuplicatedCategory: true
-}, _temp)) || _class;
-
-/* harmony default export */ __webpack_exports__["a"] = (XAxis);
-
-/***/ }),
-/* 45 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util_PureRender__ = __webpack_require__(3);
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-var _class, _class2, _temp;
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-/**
- * @fileOverview Y Axis
- */
-
-
-
-
-var YAxis = Object(__WEBPACK_IMPORTED_MODULE_2__util_PureRender__["a" /* default */])(_class = (_temp = _class2 = function (_Component) {
-  _inherits(YAxis, _Component);
-
-  function YAxis() {
-    _classCallCheck(this, YAxis);
-
-    return _possibleConstructorReturn(this, (YAxis.__proto__ || Object.getPrototypeOf(YAxis)).apply(this, arguments));
-  }
-
-  _createClass(YAxis, [{
-    key: 'render',
-    value: function render() {
-      return null;
-    }
-  }]);
-
-  return YAxis;
-}(__WEBPACK_IMPORTED_MODULE_0_react__["Component"]), _class2.displayName = 'YAxis', _class2.propTypes = {
-  allowDecimals: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  allowDuplicatedCategory: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  hide: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  // The name of data displayed in the axis
-  name: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
-  // The unit of data displayed in the axis
-  unit: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
-  // The unique id of y-axis
-  yAxisId: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
-  domain: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.arrayOf(__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['auto', 'dataMin', 'dataMax'])])),
-  // The key of data displayed in the axis
-  dataKey: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func]),
-  // Ticks can be any type when the axis is the type of category
-  // Ticks must be numbers when the axis is the type of number
-  ticks: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.array,
-  // The count of ticks
-  tickCount: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  // The formatter function of tick
-  tickFormatter: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
-  // The width of axis, which need to be setted by user
-  width: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  // The height of axis which is usually calculated in Chart
-  height: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  mirror: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  // The orientation of axis
-  orientation: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['left', 'right']),
-  type: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['number', 'category']),
-  padding: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.shape({
-    top: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-    bottom: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number
-  }),
-  allowDataOverflow: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
-  scale: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['auto', 'linear', 'pow', 'sqrt', 'log', 'identity', 'time', 'band', 'point', 'ordinal', 'quantile', 'quantize', 'utc', 'sequential', 'threshold']), __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func]),
-  tick: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.element]),
-  axisLine: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object]),
-  tickLine: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object]),
-  minTickGap: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  tickSize: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
-  interval: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['preserveStart', 'preserveEnd', 'preserveStartEnd'])]),
-  reversed: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool
-}, _class2.defaultProps = {
-  allowDuplicatedCategory: true,
-  allowDecimals: true,
-  hide: false,
-  orientation: 'left',
-  width: 60,
-  height: 0,
-  mirror: false,
-  yAxisId: 0,
-  tickCount: 5,
-  type: 'number',
-  domain: [0, 'auto'],
-  padding: { top: 0, bottom: 0 },
-  allowDataOverflow: false,
-  scale: 'auto',
-  reversed: false
-}, _temp)) || _class;
-
-/* harmony default export */ __webpack_exports__["a"] = (YAxis);
-
-/***/ }),
-/* 46 */
-/***/ (function(module, exports, __webpack_require__) {
-
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
   if (true) {
     !(__WEBPACK_AMD_DEFINE_ARRAY__ = [module], __WEBPACK_AMD_DEFINE_FACTORY__ = (factory),
@@ -8262,7 +7411,697 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 
 /***/ }),
-/* 47 */
+/* 39 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__baseGetTag_js__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__isObjectLike_js__ = __webpack_require__(22);
+
+
+
+/** `Object#toString` result references. */
+var symbolTag = '[object Symbol]';
+
+/**
+ * Checks if `value` is classified as a `Symbol` primitive or object.
+ *
+ * @static
+ * @memberOf _
+ * @since 4.0.0
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+ * @example
+ *
+ * _.isSymbol(Symbol.iterator);
+ * // => true
+ *
+ * _.isSymbol('abc');
+ * // => false
+ */
+function isSymbol(value) {
+  return typeof value == 'symbol' ||
+    (Object(__WEBPACK_IMPORTED_MODULE_1__isObjectLike_js__["a" /* default */])(value) && Object(__WEBPACK_IMPORTED_MODULE_0__baseGetTag_js__["a" /* default */])(value) == symbolTag);
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (isSymbol);
+
+
+/***/ }),
+/* 40 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/**
+ * This method returns the first argument it receives.
+ *
+ * @static
+ * @since 0.1.0
+ * @memberOf _
+ * @category Util
+ * @param {*} value Any value.
+ * @returns {*} Returns `value`.
+ * @example
+ *
+ * var object = { 'a': 1 };
+ *
+ * console.log(_.identity(object) === object);
+ * // => true
+ */
+function identity(value) {
+  return value;
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (identity);
+
+
+/***/ }),
+/* 41 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony default export */ __webpack_exports__["a"] = (function(a, b) {
+  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+});
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_classnames__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_classnames___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_classnames__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_react_smooth__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_react_smooth___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_react_smooth__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__util_PureRender__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__ = __webpack_require__(2);
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _class, _class2, _temp2;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * @fileOverview Rectangle
+ */
+
+
+
+
+
+
+
+var getRectangePath = function getRectangePath(x, y, width, height, radius) {
+  var maxRadius = Math.min(Math.abs(width) / 2, Math.abs(height) / 2);
+  var sign = height >= 0 ? 1 : -1;
+  var clockWise = height >= 0 ? 1 : 0;
+  var path = void 0;
+
+  if (maxRadius > 0 && radius instanceof Array) {
+    var newRadius = [];
+    for (var i = 0, len = 4; i < len; i++) {
+      newRadius[i] = radius[i] > maxRadius ? maxRadius : radius[i];
+    }
+
+    path = 'M' + x + ',' + (y + sign * newRadius[0]);
+
+    if (newRadius[0] > 0) {
+      path += 'A ' + newRadius[0] + ',' + newRadius[0] + ',0,0,' + clockWise + ',' + (x + newRadius[0]) + ',' + y;
+    }
+
+    path += 'L ' + (x + width - newRadius[1]) + ',' + y;
+
+    if (newRadius[1] > 0) {
+      path += 'A ' + newRadius[1] + ',' + newRadius[1] + ',0,0,' + clockWise + ',\n        ' + (x + width) + ',' + (y + sign * newRadius[1]);
+    }
+    path += 'L ' + (x + width) + ',' + (y + height - sign * newRadius[2]);
+
+    if (newRadius[2] > 0) {
+      path += 'A ' + newRadius[2] + ',' + newRadius[2] + ',0,0,' + clockWise + ',\n        ' + (x + width - newRadius[2]) + ',' + (y + height);
+    }
+    path += 'L ' + (x + newRadius[3]) + ',' + (y + height);
+
+    if (newRadius[3] > 0) {
+      path += 'A ' + newRadius[3] + ',' + newRadius[3] + ',0,0,' + clockWise + ',\n        ' + x + ',' + (y + height - sign * newRadius[3]);
+    }
+    path += 'Z';
+  } else if (maxRadius > 0 && radius === +radius && radius > 0) {
+    var _newRadius = Math.min(maxRadius, radius);
+
+    path = 'M ' + x + ',' + (y + sign * _newRadius) + '\n            A ' + _newRadius + ',' + _newRadius + ',0,0,' + clockWise + ',' + (x + _newRadius) + ',' + y + '\n            L ' + (x + width - _newRadius) + ',' + y + '\n            A ' + _newRadius + ',' + _newRadius + ',0,0,' + clockWise + ',' + (x + width) + ',' + (y + sign * _newRadius) + '\n            L ' + (x + width) + ',' + (y + height - sign * _newRadius) + '\n            A ' + _newRadius + ',' + _newRadius + ',0,0,' + clockWise + ',' + (x + width - _newRadius) + ',' + (y + height) + '\n            L ' + (x + _newRadius) + ',' + (y + height) + '\n            A ' + _newRadius + ',' + _newRadius + ',0,0,' + clockWise + ',' + x + ',' + (y + height - sign * _newRadius) + ' Z';
+  } else {
+    path = 'M ' + x + ',' + y + ' h ' + width + ' v ' + height + ' h ' + -width + ' Z';
+  }
+
+  return path;
+};
+
+var Rectangle = Object(__WEBPACK_IMPORTED_MODULE_4__util_PureRender__["a" /* default */])(_class = (_temp2 = _class2 = function (_Component) {
+  _inherits(Rectangle, _Component);
+
+  function Rectangle() {
+    var _ref;
+
+    var _temp, _this, _ret;
+
+    _classCallCheck(this, Rectangle);
+
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = Rectangle.__proto__ || Object.getPrototypeOf(Rectangle)).call.apply(_ref, [this].concat(args))), _this), _this.state = {
+      totalLength: -1
+    }, _temp), _possibleConstructorReturn(_this, _ret);
+  }
+
+  _createClass(Rectangle, [{
+    key: 'componentDidMount',
+
+
+    /* eslint-disable  react/no-did-mount-set-state */
+    value: function componentDidMount() {
+      if (this.node && this.node.getTotalLength) {
+        try {
+          var totalLength = this.node.getTotalLength();
+
+          if (totalLength) {
+            this.setState({
+              totalLength: totalLength
+            });
+          }
+        } catch (err) {
+          // calculate total length error
+        }
+      }
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _this2 = this;
+
+      var _props = this.props,
+          x = _props.x,
+          y = _props.y,
+          width = _props.width,
+          height = _props.height,
+          radius = _props.radius,
+          className = _props.className;
+      var totalLength = this.state.totalLength;
+      var _props2 = this.props,
+          animationEasing = _props2.animationEasing,
+          animationDuration = _props2.animationDuration,
+          animationBegin = _props2.animationBegin,
+          isAnimationActive = _props2.isAnimationActive,
+          isUpdateAnimationActive = _props2.isUpdateAnimationActive;
+
+
+      if (x !== +x || y !== +y || width !== +width || height !== +height || width === 0 || height === 0) {
+        return null;
+      }
+
+      var layerClass = __WEBPACK_IMPORTED_MODULE_2_classnames___default()('recharts-rectangle', className);
+
+      if (!isUpdateAnimationActive) {
+        return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('path', _extends({}, Object(__WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["k" /* getPresentationAttributes */])(this.props), Object(__WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["e" /* filterEventAttributes */])(this.props), {
+          className: layerClass,
+          d: getRectangePath(x, y, width, height, radius)
+        }));
+      }
+
+      return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+        __WEBPACK_IMPORTED_MODULE_3_react_smooth___default.a,
+        {
+          canBegin: totalLength > 0,
+          from: { width: width, height: height, x: x, y: y },
+          to: { width: width, height: height, x: x, y: y },
+          duration: animationDuration,
+          animationEasing: animationEasing,
+          isActive: isUpdateAnimationActive
+        },
+        function (_ref2) {
+          var currWidth = _ref2.width,
+              currHeight = _ref2.height,
+              currX = _ref2.x,
+              currY = _ref2.y;
+          return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+            __WEBPACK_IMPORTED_MODULE_3_react_smooth___default.a,
+            {
+              canBegin: totalLength > 0,
+              from: '0px ' + (totalLength === -1 ? 1 : totalLength) + 'px',
+              to: totalLength + 'px 0px',
+              attributeName: 'strokeDasharray',
+              begin: animationBegin,
+              duration: animationDuration,
+              isActive: isAnimationActive,
+              easing: animationEasing
+            },
+            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement('path', _extends({}, Object(__WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["k" /* getPresentationAttributes */])(_this2.props), Object(__WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["e" /* filterEventAttributes */])(_this2.props), {
+              className: layerClass,
+              d: getRectangePath(currX, currY, currWidth, currHeight, radius),
+              ref: function ref(node) {
+                _this2.node = node;
+              }
+            }))
+          );
+        }
+      );
+    }
+  }]);
+
+  return Rectangle;
+}(__WEBPACK_IMPORTED_MODULE_0_react__["Component"]), _class2.displayName = 'Rectangle', _class2.propTypes = _extends({}, __WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["c" /* PRESENTATION_ATTRIBUTES */], __WEBPACK_IMPORTED_MODULE_5__util_ReactUtils__["a" /* EVENT_ATTRIBUTES */], {
+  className: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string,
+  x: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  y: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  width: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  height: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  radius: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.array]),
+  isAnimationActive: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  isUpdateAnimationActive: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  animationBegin: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  animationDuration: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  animationEasing: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['ease', 'ease-in', 'ease-out', 'ease-in-out', 'linear'])
+}), _class2.defaultProps = {
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0,
+  // The radius of border
+  // The radius of four corners when radius is a number
+  // The radius of left-top, right-top, right-bottom, left-bottom when radius is an array
+  radius: 0,
+  isAnimationActive: false,
+  isUpdateAnimationActive: false,
+  animationBegin: 0,
+  animationDuration: 1500,
+  animationEasing: 'ease'
+}, _temp2)) || _class;
+
+/* harmony default export */ __webpack_exports__["a"] = (Rectangle);
+
+/***/ }),
+/* 43 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash_es_isArray__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lodash_es_isFunction__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_react__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_prop_types__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_prop_types__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_d3_shape__ = __webpack_require__(109);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_classnames__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_classnames___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_classnames__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__util_PureRender__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__util_ReactUtils__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__util_DataUtils__ = __webpack_require__(6);
+
+
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _class, _class2, _temp;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * @fileOverview Curve
+ */
+
+
+
+
+
+
+
+
+
+var CURVE_FACTORIES = {
+  curveBasisClosed: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["c" /* curveBasisClosed */], curveBasisOpen: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["d" /* curveBasisOpen */], curveBasis: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["b" /* curveBasis */], curveLinearClosed: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["f" /* curveLinearClosed */], curveLinear: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["e" /* curveLinear */],
+  curveMonotoneX: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["g" /* curveMonotoneX */], curveMonotoneY: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["h" /* curveMonotoneY */], curveNatural: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["i" /* curveNatural */], curveStep: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["j" /* curveStep */], curveStepAfter: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["k" /* curveStepAfter */],
+  curveStepBefore: __WEBPACK_IMPORTED_MODULE_4_d3_shape__["l" /* curveStepBefore */]
+};
+
+var defined = function defined(p) {
+  return p.x === +p.x && p.y === +p.y;
+};
+var getX = function getX(p) {
+  return p.x;
+};
+var getY = function getY(p) {
+  return p.y;
+};
+
+var getCurveFactory = function getCurveFactory(type, layout) {
+  if (Object(__WEBPACK_IMPORTED_MODULE_1_lodash_es_isFunction__["a" /* default */])(type)) {
+    return type;
+  }
+
+  var name = 'curve' + type.slice(0, 1).toUpperCase() + type.slice(1);
+
+  if (name === 'curveMonotone' && layout) {
+    return CURVE_FACTORIES['' + name + (layout === 'vertical' ? 'Y' : 'X')];
+  }
+  return CURVE_FACTORIES[name] || __WEBPACK_IMPORTED_MODULE_4_d3_shape__["e" /* curveLinear */];
+};
+
+var Curve = Object(__WEBPACK_IMPORTED_MODULE_6__util_PureRender__["a" /* default */])(_class = (_temp = _class2 = function (_Component) {
+  _inherits(Curve, _Component);
+
+  function Curve() {
+    _classCallCheck(this, Curve);
+
+    return _possibleConstructorReturn(this, (Curve.__proto__ || Object.getPrototypeOf(Curve)).apply(this, arguments));
+  }
+
+  _createClass(Curve, [{
+    key: 'getPath',
+
+    /**
+     * Calculate the path of curve
+     * @return {String} path
+     */
+    value: function getPath() {
+      var _props = this.props,
+          type = _props.type,
+          points = _props.points,
+          baseLine = _props.baseLine,
+          layout = _props.layout,
+          connectNulls = _props.connectNulls;
+
+      var curveFactory = getCurveFactory(type, layout);
+      var formatPoints = connectNulls ? points.filter(function (entry) {
+        return defined(entry);
+      }) : points;
+      var lineFunction = void 0;
+
+      if (Object(__WEBPACK_IMPORTED_MODULE_0_lodash_es_isArray__["a" /* default */])(baseLine)) {
+        var formatBaseLine = connectNulls ? baseLine.filter(function (base) {
+          return defined(base);
+        }) : baseLine;
+        var areaPoints = formatPoints.map(function (entry, index) {
+          return _extends({}, entry, { base: formatBaseLine[index] });
+        });
+        if (layout === 'vertical') {
+          lineFunction = Object(__WEBPACK_IMPORTED_MODULE_4_d3_shape__["a" /* area */])().y(getY).x1(getX).x0(function (d) {
+            return d.base.x;
+          });
+        } else {
+          lineFunction = Object(__WEBPACK_IMPORTED_MODULE_4_d3_shape__["a" /* area */])().x(getX).y1(getY).y0(function (d) {
+            return d.base.y;
+          });
+        }
+        lineFunction.defined(defined).curve(curveFactory);
+
+        return lineFunction(areaPoints);
+      } else if (layout === 'vertical' && Object(__WEBPACK_IMPORTED_MODULE_8__util_DataUtils__["h" /* isNumber */])(baseLine)) {
+        lineFunction = Object(__WEBPACK_IMPORTED_MODULE_4_d3_shape__["a" /* area */])().y(getY).x1(getX).x0(baseLine);
+      } else if (Object(__WEBPACK_IMPORTED_MODULE_8__util_DataUtils__["h" /* isNumber */])(baseLine)) {
+        lineFunction = Object(__WEBPACK_IMPORTED_MODULE_4_d3_shape__["a" /* area */])().x(getX).y1(getY).y0(baseLine);
+      } else {
+        lineFunction = Object(__WEBPACK_IMPORTED_MODULE_4_d3_shape__["m" /* line */])().x(getX).y(getY);
+      }
+
+      lineFunction.defined(defined).curve(curveFactory);
+
+      return lineFunction(formatPoints);
+    }
+  }, {
+    key: 'render',
+    value: function render() {
+      var _props2 = this.props,
+          className = _props2.className,
+          points = _props2.points,
+          path = _props2.path,
+          pathRef = _props2.pathRef;
+
+
+      if ((!points || !points.length) && !path) {
+        return null;
+      }
+
+      var realPath = points && points.length ? this.getPath() : path;
+
+      return __WEBPACK_IMPORTED_MODULE_2_react___default.a.createElement('path', _extends({}, Object(__WEBPACK_IMPORTED_MODULE_7__util_ReactUtils__["k" /* getPresentationAttributes */])(this.props), Object(__WEBPACK_IMPORTED_MODULE_7__util_ReactUtils__["e" /* filterEventAttributes */])(this.props, null, true), {
+        className: __WEBPACK_IMPORTED_MODULE_5_classnames___default()('recharts-curve', className),
+        d: realPath,
+        ref: pathRef
+      }));
+    }
+  }]);
+
+  return Curve;
+}(__WEBPACK_IMPORTED_MODULE_2_react__["Component"]), _class2.displayName = 'Curve', _class2.propTypes = _extends({}, __WEBPACK_IMPORTED_MODULE_7__util_ReactUtils__["c" /* PRESENTATION_ATTRIBUTES */], {
+  className: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.string,
+  type: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.oneOf(['basis', 'basisClosed', 'basisOpen', 'linear', 'linearClosed', 'natural', 'monotoneX', 'monotoneY', 'monotone', 'step', 'stepBefore', 'stepAfter']), __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.func]),
+  layout: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.oneOf(['horizontal', 'vertical']),
+  baseLine: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.array]),
+  points: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.arrayOf(__WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.object),
+  connectNulls: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.bool,
+  path: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.string,
+  pathRef: __WEBPACK_IMPORTED_MODULE_3_prop_types___default.a.func
+}), _class2.defaultProps = {
+  type: 'linear',
+  points: [],
+  connectNulls: false
+}, _temp)) || _class;
+
+/* harmony default export */ __webpack_exports__["a"] = (Curve);
+
+/***/ }),
+/* 44 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util_PureRender__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util_ReactUtils__ = __webpack_require__(2);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _class, _class2, _temp;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * @fileOverview X Axis
+ */
+
+
+
+
+
+var XAxis = Object(__WEBPACK_IMPORTED_MODULE_2__util_PureRender__["a" /* default */])(_class = (_temp = _class2 = function (_Component) {
+  _inherits(XAxis, _Component);
+
+  function XAxis() {
+    _classCallCheck(this, XAxis);
+
+    return _possibleConstructorReturn(this, (XAxis.__proto__ || Object.getPrototypeOf(XAxis)).apply(this, arguments));
+  }
+
+  _createClass(XAxis, [{
+    key: 'render',
+    value: function render() {
+      return null;
+    }
+  }]);
+
+  return XAxis;
+}(__WEBPACK_IMPORTED_MODULE_0_react__["Component"]), _class2.displayName = 'XAxis', _class2.propTypes = {
+  allowDecimals: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  allowDuplicatedCategory: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  hide: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  // The name of data displayed in the axis
+  name: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
+  // The unit of data displayed in the axis
+  unit: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
+  // The unique id of x-axis
+  xAxisId: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
+  domain: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.arrayOf(__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['auto', 'dataMin', 'dataMax'])])),
+  // The key of data displayed in the axis
+  dataKey: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func]),
+  // The width of axis which is usually calculated internally
+  width: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  // The height of axis, which need to be setted by user
+  height: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  mirror: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  // The orientation of axis
+  orientation: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['top', 'bottom']),
+  type: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['number', 'category']),
+  // Ticks can be any type when the axis is the type of category
+  // Ticks must be numbers when the axis is the type of number
+  ticks: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.array,
+  // The count of ticks
+  tickCount: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  // The formatter function of tick
+  tickFormatter: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
+  padding: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.shape({
+    left: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+    right: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number
+  }),
+  allowDataOverflow: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  scale: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(__WEBPACK_IMPORTED_MODULE_3__util_ReactUtils__["d" /* SCALE_TYPES */]), __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func]),
+  tick: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.element]),
+  axisLine: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object]),
+  tickLine: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object]),
+  minTickGap: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  tickSize: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  interval: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['preserveStart', 'preserveEnd', 'preserveStartEnd'])]),
+  reversed: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool
+}, _class2.defaultProps = {
+  allowDecimals: true,
+  hide: false,
+  orientation: 'bottom',
+  width: 0,
+  height: 30,
+  mirror: false,
+  xAxisId: 0,
+  tickCount: 5,
+  type: 'category',
+  domain: [0, 'auto'],
+  padding: { left: 0, right: 0 },
+  allowDataOverflow: false,
+  scale: 'auto',
+  reversed: false,
+  allowDuplicatedCategory: true
+}, _temp)) || _class;
+
+/* harmony default export */ __webpack_exports__["a"] = (XAxis);
+
+/***/ }),
+/* 45 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util_PureRender__ = __webpack_require__(3);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _class, _class2, _temp;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+/**
+ * @fileOverview Y Axis
+ */
+
+
+
+
+var YAxis = Object(__WEBPACK_IMPORTED_MODULE_2__util_PureRender__["a" /* default */])(_class = (_temp = _class2 = function (_Component) {
+  _inherits(YAxis, _Component);
+
+  function YAxis() {
+    _classCallCheck(this, YAxis);
+
+    return _possibleConstructorReturn(this, (YAxis.__proto__ || Object.getPrototypeOf(YAxis)).apply(this, arguments));
+  }
+
+  _createClass(YAxis, [{
+    key: 'render',
+    value: function render() {
+      return null;
+    }
+  }]);
+
+  return YAxis;
+}(__WEBPACK_IMPORTED_MODULE_0_react__["Component"]), _class2.displayName = 'YAxis', _class2.propTypes = {
+  allowDecimals: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  allowDuplicatedCategory: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  hide: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  // The name of data displayed in the axis
+  name: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
+  // The unit of data displayed in the axis
+  unit: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
+  // The unique id of y-axis
+  yAxisId: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number]),
+  domain: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.arrayOf(__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['auto', 'dataMin', 'dataMax'])])),
+  // The key of data displayed in the axis
+  dataKey: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.string, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func]),
+  // Ticks can be any type when the axis is the type of category
+  // Ticks must be numbers when the axis is the type of number
+  ticks: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.array,
+  // The count of ticks
+  tickCount: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  // The formatter function of tick
+  tickFormatter: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func,
+  // The width of axis, which need to be setted by user
+  width: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  // The height of axis which is usually calculated in Chart
+  height: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  mirror: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  // The orientation of axis
+  orientation: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['left', 'right']),
+  type: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['number', 'category']),
+  padding: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.shape({
+    top: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+    bottom: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number
+  }),
+  allowDataOverflow: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool,
+  scale: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['auto', 'linear', 'pow', 'sqrt', 'log', 'identity', 'time', 'band', 'point', 'ordinal', 'quantile', 'quantize', 'utc', 'sequential', 'threshold']), __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func]),
+  tick: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.func, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.element]),
+  axisLine: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object]),
+  tickLine: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.object]),
+  minTickGap: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  tickSize: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number,
+  interval: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOfType([__WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.number, __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.oneOf(['preserveStart', 'preserveEnd', 'preserveStartEnd'])]),
+  reversed: __WEBPACK_IMPORTED_MODULE_1_prop_types___default.a.bool
+}, _class2.defaultProps = {
+  allowDuplicatedCategory: true,
+  allowDecimals: true,
+  hide: false,
+  orientation: 'left',
+  width: 60,
+  height: 0,
+  mirror: false,
+  yAxisId: 0,
+  tickCount: 5,
+  type: 'number',
+  domain: [0, 'auto'],
+  padding: { top: 0, bottom: 0 },
+  allowDataOverflow: false,
+  scale: 'auto',
+  reversed: false
+}, _temp)) || _class;
+
+/* harmony default export */ __webpack_exports__["a"] = (YAxis);
+
+/***/ }),
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8273,6 +8112,175 @@ Object.defineProperty(exports, "__esModule", {
 });
 const QUEUE_FOLDER_NAME = exports.QUEUE_FOLDER_NAME = 'READ IT LATER';
 const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
+
+/***/ }),
+/* 47 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+
+var _webextensionPolyfill = __webpack_require__(38);
+
+var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
+
+var _constants = __webpack_require__(46);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
+  var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
+  var url = document.createElement('a');
+  url.href = urlString;
+  return supportedProtocols.indexOf(url.protocol) != -1;
+};
+
+const getActiveTab = exports.getActiveTab = (() => {
+  var _ref = _asyncToGenerator(function* () {
+    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
+    if (activeTab && isSupportedProtocol(activeTab.url)) {
+      return activeTab;
+    } else {
+      return null;
+    }
+  });
+
+  return function getActiveTab() {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+const getValidTabs = exports.getValidTabs = (() => {
+  var _ref2 = _asyncToGenerator(function* () {
+    const tabs = yield _webextensionPolyfill2.default.tabs.query({});
+    return tabs.filter(function (e) {
+      return isSupportedProtocol(e.url);
+    });
+  });
+
+  return function getValidTabs() {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+const getFolderId = exports.getFolderId = (() => {
+  var _ref3 = _asyncToGenerator(function* (folderName) {
+    const [found] = yield _webextensionPolyfill2.default.bookmarks.search({ title: folderName });
+    if (found) {
+      return found.id;
+    } else {
+      const newFolder = yield _webextensionPolyfill2.default.bookmarks.create({ title: folderName });
+      return newFolder.id;
+    }
+  });
+
+  return function getFolderId(_x) {
+    return _ref3.apply(this, arguments);
+  };
+})();
+
+const getFoldersIds = exports.getFoldersIds = (() => {
+  var _ref4 = _asyncToGenerator(function* () {
+    const queueFolderId = yield getFolderId(_constants.QUEUE_FOLDER_NAME);
+    const archiveFolderId = yield getFolderId(_constants.ARCHIVE_FOLDER_NAME);
+    return { queueFolderId, archiveFolderId };
+  });
+
+  return function getFoldersIds() {
+    return _ref4.apply(this, arguments);
+  };
+})();
+
+const getItems = exports.getItems = (() => {
+  var _ref5 = _asyncToGenerator(function* (folderId) {
+    const [result] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(folderId);
+    return result.children;
+  });
+
+  return function getItems(_x2) {
+    return _ref5.apply(this, arguments);
+  };
+})();
+
+const find = exports.find = (() => {
+  var _ref6 = _asyncToGenerator(function* (folderId, url) {
+    const items = yield getItems(folderId);
+    return items.find(function (e) {
+      return e.url === url;
+    });
+  });
+
+  return function find(_x3, _x4) {
+    return _ref6.apply(this, arguments);
+  };
+})();
+
+const getUrlStatus = exports.getUrlStatus = (() => {
+  var _ref7 = _asyncToGenerator(function* () {
+    const activeTab = yield getActiveTab();
+    const { queueFolderId, archiveFolderId } = yield getFoldersIds();
+    if (activeTab) {
+      const isQueued = yield find(queueFolderId, activeTab.url);
+      const isArchived = yield find(archiveFolderId, activeTab.url);
+      const queue = yield getItems(queueFolderId);
+      const nextInQueue = queue.find(function (e) {
+        return e.url !== activeTab.url;
+      });
+      return {
+        valid: activeTab !== null,
+        activeTab,
+        isQueued,
+        isArchived,
+        nextUrl: nextInQueue ? nextInQueue.url : null
+      };
+    } else {
+      const queue = yield getItems(queueFolderId);
+      return {
+        valid: false,
+        activeTab: null,
+        isQueued: false,
+        isArchived: false,
+        nextUrl: queue[0]
+      };
+    }
+  });
+
+  return function getUrlStatus() {
+    return _ref7.apply(this, arguments);
+  };
+})();
+
+const convertDate = exports.convertDate = date => {
+  var yyyy = date.getFullYear().toString();
+  var mm = (date.getMonth() + 1).toString();
+  var dd = date.getDate().toString();
+
+  var mmChars = mm.split('');
+  var ddChars = dd.split('');
+
+  return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
+};
+
+const getIcon = exports.getIcon = (foundBookmark, foundArchived, tabId) => {
+  let prefix = 'empty';
+  if (foundBookmark) prefix = 'queued';
+  if (foundArchived) prefix = 'archived';
+  const icon = {
+    path: {
+      19: `icons/${prefix}-19.png`,
+      38: `icons/${prefix}-38.png`
+    },
+    tabId
+  };
+  return icon;
+};
 
 /***/ }),
 /* 48 */
@@ -10992,13 +11000,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.toggle = undefined;
 
-var _webextensionPolyfill = __webpack_require__(46);
+var _webextensionPolyfill = __webpack_require__(38);
 
 var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
 
-var _constants = __webpack_require__(47);
+var _constants = __webpack_require__(46);
 
-var _util = __webpack_require__(38);
+var _util = __webpack_require__(47);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -24543,7 +24551,7 @@ var _reactDom = __webpack_require__(149);
 
 var _reactDom2 = _interopRequireDefault(_reactDom);
 
-var _webextensionPolyfill = __webpack_require__(46);
+var _webextensionPolyfill = __webpack_require__(38);
 
 var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
 
@@ -24557,7 +24565,7 @@ var _Buttons = __webpack_require__(664);
 
 var _Buttons2 = _interopRequireDefault(_Buttons);
 
-var _util = __webpack_require__(38);
+var _util = __webpack_require__(47);
 
 var _background = __webpack_require__(92);
 
@@ -24578,7 +24586,7 @@ class App extends _react2.default.Component {
       queuedToday: 0,
       archivedToday: 0,
       totalQueued: 0,
-      totalArchived: 100,
+      totalArchived: 0,
       data: null
     }, this.componentDidMount = _asyncToGenerator(function* () {
       _this.setState(_extends({}, (yield (0, _util.getUrlStatus)()), (yield (0, _statistics.getStatistics)())));
@@ -25264,7 +25272,7 @@ exports.getStatistics = undefined;
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _util = __webpack_require__(38);
+var _util = __webpack_require__(47);
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 

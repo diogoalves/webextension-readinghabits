@@ -19,13 +19,13 @@ class App extends React.Component {
     queuedToday: 0,
     archivedToday: 0,
     totalQueued: 0,
-    totalArchived: 100,
+    totalArchived: 0,
     data: null,
   }
 
    componentDidMount = async () => {
     this.setState({ 
-      ...await getUrlStatus(),
+       ...await getUrlStatus(),
       ...await getStatistics(),
     });
   }
