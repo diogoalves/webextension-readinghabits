@@ -5,7 +5,6 @@ import { isSupportedProtocol, getItems, find, getIcon} from './util';
 const update = async () => {
   const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
   if (activeTab && isSupportedProtocol(activeTab.url)) {
-    browser.pageAction.show(activeTab.id);
     const [ { id: queueFolderId } ]= await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});
     const [ { id : archiveFolderId } ] = await browser.bookmarks.search({title: ARCHIVE_FOLDER_NAME});
     if(queueFolderId && archiveFolderId) {
@@ -13,8 +12,7 @@ const update = async () => {
       const foundArchived = await find(archiveFolderId, activeTab.url);
       const icon = getIcon(foundBookmark, foundArchived, activeTab.id);
 
-      browser.pageAction.setIcon(icon);
-      browser.pageAction.show(activeTab.id);
+      browser.browserAction.setIcon(icon);
 
       const { length : queuedItemsQuantity } = await getItems(queueFolderId);
       if(queuedItemsQuantity > 0) {
@@ -26,7 +24,7 @@ const update = async () => {
   }
 }
 
-const toggle = async (tab) => {
+export const toggle = async (tab) => {
   const [ { id: queueFolderId } ]= await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});
   const [ { id : archiveFolderId } ] = await browser.bookmarks.search({title: ARCHIVE_FOLDER_NAME});
   if(queueFolderId && archiveFolderId) {
@@ -57,7 +55,6 @@ browser.bookmarks.onRemoved.addListener(update);
 browser.tabs.onUpdated.addListener(update);
 browser.tabs.onActivated.addListener(update);
 browser.windows.onFocusChanged.addListener(update);
-browser.pageAction.onClicked.addListener(toggle);
 
 update();
 

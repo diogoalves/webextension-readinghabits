@@ -3,53 +3,65 @@ import ReactDOM from 'react-dom';
 import browser from 'webextension-polyfill';
 
 import { getStatistics } from './statistics';
-import { next } from './util';
 import Chart from './Chart';
+import Buttons from './Buttons';
+import { getUrlStatus } from './util';
+import { toggle } from './background';
 
 class App extends React.Component {
 
   state = {
-    nextInQueue: null,
+    activeTab: null,
+    valid: null,
+    isQueued: false, 
+    isArchived: false,
+    nextUrl: null,
     queuedToday: 0,
     archivedToday: 0,
     totalQueued: 0,
-    totalArchived: 0,
+    totalArchived: 100,
     data: null,
   }
 
-  async componentDidMount() {
+   componentDidMount = async () => {
     this.setState({ 
-      nextInQueue: await next(),
-      ...await getStatistics()
+      ...await getUrlStatus(),
+      ...await getStatistics(),
     });
   }
 
-  handleNext = async () => {
-    const { nextInQueue } = this.state;
-    if(nextInQueue) {
-      browser.tabs.update(
-        null,
-        {
-          url: nextInQueue.url
-        }
-      )
-      window.close()
+  handleToggle = async () => {
+    if(this.state.valid) {
+      await toggle(this.state.activeTab);
+      this.setState({
+        ...await getUrlStatus(),
+        ...await getStatistics(),
+      })
     }
   }
+
+  handleNext = () => {
+    const { nextUrl: url } = this.state;
+    browser.tabs.update(null, {url})
+    window.close()
+  }
+
   
   render() {
-    const { queuedToday, archivedToday, totalQueued, totalArchived, nextInQueue, data } = this.state;
+    const { valid, isQueued, isArchived, queuedToday, nextUrl, archivedToday, totalQueued, totalArchived, data } = this.state;
     return (
       <div>
+        <Buttons toggle={this.handleToggle} valid={valid} isQueued={isQueued} isArchived={isArchived}/>
         <Chart data={data} />
         <small> 
           Today you have added {queuedToday} and archived {archivedToday} items. Total added: {totalQueued}. Total archived: {totalArchived}.
         </small>        
-        { nextInQueue && (
+        { nextUrl && (
           <button onClick={this.handleNext} className="buttonNext">Open next</button>
-        )}      
+        )}
       </div>
     );
+
   }
 } 
 

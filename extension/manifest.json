@@ -21,14 +21,9 @@
 
   "browser_action": {
     "browser_style": true,
-    "default_icon": "icons/dashboard.svg",
+    "default_icon": "icons/empty-38.png",
     "default_title": "Reading habits",
     "default_popup": "app.html"
-  },
-
-  "page_action": {
-    "default_icon": "icons/empty-38.png",
-    "browser_style": true
   },
 
   "background": {

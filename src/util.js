@@ -48,11 +48,22 @@ export const find = async (folderId, url) => {
   return items.find( e => e.url === url);
 }
 
-export const next = async () => {
+export const getUrlStatus = async () => {
+  const activeTab = await getActiveTab();
   const [ { id: queueFolderId } ]= await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});
-  if(queueFolderId) {
+  const [ { id: archiveFolderId } ] = await browser.bookmarks.search({title: ARCHIVE_FOLDER_NAME});
+  if(queueFolderId && archiveFolderId) {
+    const isQueued = await find(queueFolderId, activeTab.url);
+    const isArchived = await find(archiveFolderId, activeTab.url);
     const queue = await getItems(queueFolderId);
-    return queue[0];
+    const nextInQueue = queue.find( e => e.url !== activeTab.url );
+    return ({
+      valid: activeTab !== null,
+      activeTab,
+      isQueued,
+      isArchived,
+      nextUrl: nextInQueue.url
+    });
   }
 }
 
