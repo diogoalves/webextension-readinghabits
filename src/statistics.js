@@ -11,12 +11,13 @@ export const getStatistics = async () => {
   const queuedToday = queued.concat(archived).filter( e => new Date(e.dateAdded).toLocaleDateString() ===  today ).length;
   const archivedToday = archived.filter( e => new Date(e.dateAdded).toLocaleDateString() ===  today ).length;
   const data = perDay(queued, archived);
-
+  const avgTimeToArchive = getAvgTimeToArchive(archived);
   return ({
     queuedToday,
     archivedToday,
     totalQueued,
     totalArchived,
+    avgTimeToArchive,
     data
   });
 }
@@ -69,4 +70,12 @@ const perDay = (queuedPerDay, archivedPerDay) => {
   return step5;
 }
 
-
+const getAvgTimeToArchive = (archived) => {
+  const qty = archived.length;
+  const avg = archived.reduce( (acc, cur) => {
+    const createdAt = parseInt(cur.dateAdded, 10);
+    const archivedAt = parseInt(cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', ''), 10);
+    return acc + (archivedAt - createdAt);
+  }, 0);
+  return Math.floor((avg/qty)/1000/60/60);
+}

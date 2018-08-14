@@ -24587,6 +24587,7 @@ class App extends _react2.default.Component {
       archivedToday: 0,
       totalQueued: 0,
       totalArchived: 0,
+      avgTimeToArchive: 0 / 0,
       data: null
     }, this.componentDidMount = _asyncToGenerator(function* () {
       _this.setState(_extends({}, (yield (0, _util.getUrlStatus)()), (yield (0, _statistics.getStatistics)())));
@@ -24603,7 +24604,7 @@ class App extends _react2.default.Component {
   }
 
   render() {
-    const { valid, isQueued, isArchived, queuedToday, nextUrl, archivedToday, totalQueued, totalArchived, data } = this.state;
+    const { valid, isQueued, isArchived, queuedToday, nextUrl, archivedToday, totalQueued, totalArchived, avgTimeToArchive, data } = this.state;
     return _react2.default.createElement(
       'div',
       null,
@@ -24621,6 +24622,14 @@ class App extends _react2.default.Component {
         '. Total archived: ',
         totalArchived,
         '.'
+      ),
+      !isNaN(avgTimeToArchive) && _react2.default.createElement(
+        'small',
+        null,
+        ' ',
+        'Average time to archive: ',
+        avgTimeToArchive,
+        ' hours.'
       ),
       nextUrl && _react2.default.createElement(
         'button',
@@ -25292,12 +25301,13 @@ const getStatistics = exports.getStatistics = (() => {
       return new Date(e.dateAdded).toLocaleDateString() === today;
     }).length;
     const data = perDay(queued, archived);
-
+    const avgTimeToArchive = getAvgTimeToArchive(archived);
     return {
       queuedToday,
       archivedToday,
       totalQueued,
       totalArchived,
+      avgTimeToArchive,
       data
     };
   });
@@ -25352,6 +25362,16 @@ const perDay = (queuedPerDay, archivedPerDay) => {
     }
   }, []);
   return step5;
+};
+
+const getAvgTimeToArchive = archived => {
+  const qty = archived.length;
+  const avg = archived.reduce((acc, cur) => {
+    const createdAt = parseInt(cur.dateAdded, 10);
+    const archivedAt = parseInt(cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', ''), 10);
+    return acc + (archivedAt - createdAt);
+  }, 0);
+  return Math.floor(avg / qty / 1000 / 60 / 60);
 };
 
 /***/ }),

@@ -20,7 +20,8 @@ class App extends React.Component {
     archivedToday: 0,
     totalQueued: 0,
     totalArchived: 0,
-    data: null,
+    avgTimeToArchive: 0/0,
+    data: null
   }
 
    componentDidMount = async () => {
@@ -48,17 +49,24 @@ class App extends React.Component {
 
   
   render() {
-    const { valid, isQueued, isArchived, queuedToday, nextUrl, archivedToday, totalQueued, totalArchived, data } = this.state;
+    const { valid, isQueued, isArchived, queuedToday, nextUrl, archivedToday, totalQueued, totalArchived, avgTimeToArchive, data } = this.state;
     return (
       <div>
         <Buttons toggle={this.handleToggle} valid={valid} isQueued={isQueued} isArchived={isArchived}/>
         <Chart data={data} />
         <small> 
           Today you have added {queuedToday} and archived {archivedToday} items. Total added: {totalQueued}. Total archived: {totalArchived}.
-        </small>        
+          
+        </small>  
+        { !isNaN(avgTimeToArchive) && (
+          <small>
+            {' '}Average time to archive: {avgTimeToArchive} hours.
+          </small>
+        )}
         { nextUrl && (
           <button onClick={this.handleNext} className="buttonNext">Open next</button>
         )}
+        
       </div>
     );
 
