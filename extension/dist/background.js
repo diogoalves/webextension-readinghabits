@@ -1413,7 +1413,7 @@ const getUrlStatus = exports.getUrlStatus = (() => {
         activeTab: null,
         isQueued: false,
         isArchived: false,
-        nextUrl: queue[0]
+        nextUrl: queue[0] ? queue[0].url : null
       };
     }
   });
