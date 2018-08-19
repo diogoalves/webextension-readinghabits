@@ -12,15 +12,49 @@ export const getStatistics = async () => {
   const archivedToday = archived.filter( e => new Date(e.dateAdded).toLocaleDateString() ===  today ).length;
   const data = perDay(queued, archived);
   const avgTimeToArchive = getAvgTimeToArchive(archived);
+  const dataByDay = byDay(queued, archived);
+
   return ({
     queuedToday,
     archivedToday,
     totalQueued,
     totalArchived,
     avgTimeToArchive,
-    data
+    data,
+    dataByDay
   });
 }
+
+const byDay = (queued, archived) => {
+  const step0 = [ 
+    {label: 'sun', queued: 0, archived: 0},
+    {label: 'mon', queued: 0, archived: 0},
+    {label: 'tue', queued: 0, archived: 0},
+    {label: 'wed', queued: 0, archived: 0},
+    {label: 'thu', queued: 0, archived: 0},
+    {label: 'fri', queued: 0, archived: 0},
+    {label: 'sat', queued: 0, archived: 0},
+  ]
+  const step1 = [...queued, ...archived].reduce( (acc, cur) => {
+    const key = (new Date(cur.dateAdded)).getDay();
+    acc[key] = { 
+      ...acc[key],
+      queued: acc[key].queued + 1
+    }
+    return acc;
+  }, step0 );
+  const step2 = archived.reduce( (acc, cur) => {
+    const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
+    const key = (new Date(parseInt(archivedTimeStamp, 10))).getDay();
+    acc[key] = { 
+      ...acc[key],
+      archived: acc[key].archived + 1
+    }
+    return acc;
+  }, step1 );
+  return step2;
+}
+
 
 const perDay = (queuedPerDay, archivedPerDay) => {
   const step1 = queuedPerDay.reduce( (acc, cur) => {

@@ -24561,6 +24561,10 @@ var _Chart = __webpack_require__(273);
 
 var _Chart2 = _interopRequireDefault(_Chart);
 
+var _ChartByDay = __webpack_require__(665);
+
+var _ChartByDay2 = _interopRequireDefault(_ChartByDay);
+
 var _Buttons = __webpack_require__(664);
 
 var _Buttons2 = _interopRequireDefault(_Buttons);
@@ -24588,7 +24592,8 @@ class App extends _react2.default.Component {
       totalQueued: 0,
       totalArchived: 0,
       avgTimeToArchive: 0 / 0,
-      data: null
+      data: null,
+      dataByDay: null
     }, this.componentDidMount = _asyncToGenerator(function* () {
       _this.setState(_extends({}, (yield (0, _util.getUrlStatus)()), (yield (0, _statistics.getStatistics)())));
     }), this.handleToggle = _asyncToGenerator(function* () {
@@ -24604,12 +24609,15 @@ class App extends _react2.default.Component {
   }
 
   render() {
-    const { valid, isQueued, isArchived, queuedToday, nextUrl, archivedToday, totalQueued, totalArchived, avgTimeToArchive, data } = this.state;
+    const { valid, isQueued, isArchived, queuedToday, nextUrl, archivedToday, totalQueued, totalArchived, avgTimeToArchive, data, dataByDay } = this.state;
+    console.log("dataByDay");
+    console.log(dataByDay);
     return _react2.default.createElement(
       'div',
       null,
       _react2.default.createElement(_Buttons2.default, { toggle: this.handleToggle, valid: valid, isQueued: isQueued, isArchived: isArchived }),
       _react2.default.createElement(_Chart2.default, { data: data }),
+      _react2.default.createElement(_ChartByDay2.default, { data: dataByDay }),
       _react2.default.createElement(
         'small',
         null,
@@ -25302,13 +25310,16 @@ const getStatistics = exports.getStatistics = (() => {
     }).length;
     const data = perDay(queued, archived);
     const avgTimeToArchive = getAvgTimeToArchive(archived);
+    const dataByDay = byDay(queued, archived);
+
     return {
       queuedToday,
       archivedToday,
       totalQueued,
       totalArchived,
       avgTimeToArchive,
-      data
+      data,
+      dataByDay
     };
   });
 
@@ -25316,6 +25327,26 @@ const getStatistics = exports.getStatistics = (() => {
     return _ref.apply(this, arguments);
   };
 })();
+
+const byDay = (queued, archived) => {
+  const step0 = [{ label: 'sun', queued: 0, archived: 0 }, { label: 'mon', queued: 0, archived: 0 }, { label: 'tue', queued: 0, archived: 0 }, { label: 'wed', queued: 0, archived: 0 }, { label: 'thu', queued: 0, archived: 0 }, { label: 'fri', queued: 0, archived: 0 }, { label: 'sat', queued: 0, archived: 0 }];
+  const step1 = [...queued, ...archived].reduce((acc, cur) => {
+    const key = new Date(cur.dateAdded).getDay();
+    acc[key] = _extends({}, acc[key], {
+      queued: acc[key].queued + 1
+    });
+    return acc;
+  }, step0);
+  const step2 = archived.reduce((acc, cur) => {
+    const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
+    const key = new Date(parseInt(archivedTimeStamp, 10)).getDay();
+    acc[key] = _extends({}, acc[key], {
+      archived: acc[key].archived + 1
+    });
+    return acc;
+  }, step1);
+  return step2;
+};
 
 const perDay = (queuedPerDay, archivedPerDay) => {
   const step1 = queuedPerDay.reduce((acc, cur) => {
@@ -44525,6 +44556,44 @@ class Buttons extends _react.Component {
 }
 
 exports.default = Buttons;
+
+/***/ }),
+/* 665 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _recharts = __webpack_require__(274);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ChartByDay extends _react.Component {
+
+  render() {
+    const { data } = this.props;
+
+    return _react2.default.createElement(
+      _recharts.ComposedChart,
+      { width: 350, height: 200, data: data, margin: { top: 20, right: 5, bottom: 20, left: 5 } },
+      _react2.default.createElement(_recharts.CartesianGrid, { stroke: '#f5f5f5' }),
+      _react2.default.createElement(_recharts.Tooltip, null),
+      _react2.default.createElement(_recharts.Bar, { dataKey: 'queued', barSize: 4, fill: 'rgb(73, 127, 243)' }),
+      _react2.default.createElement(_recharts.Bar, { dataKey: 'archived', barSize: 4, fill: 'rgb(243, 79, 73)' }),
+      _react2.default.createElement(_recharts.XAxis, { dataKey: 'label' })
+    );
+  }
+}
+
+exports.default = ChartByDay;
 
 /***/ })
 /******/ ]);
