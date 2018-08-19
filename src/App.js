@@ -5,6 +5,7 @@ import browser from 'webextension-polyfill';
 import { getStatistics } from './statistics';
 import Chart from './Chart';
 import ChartByDay from './ChartByDay';
+import ChartByHour from './ChartByHour';
 import Buttons from './Buttons';
 import { getUrlStatus } from './util';
 import { toggle } from './background';
@@ -23,7 +24,8 @@ class App extends React.Component {
     totalArchived: 0,
     avgTimeToArchive: 0/0,
     data: null,
-    dataByDay: null
+    dataByDay: null,
+    dataByHour: null
   }
 
    componentDidMount = async () => {
@@ -51,14 +53,15 @@ class App extends React.Component {
 
   
   render() {
-    const { valid, isQueued, isArchived, queuedToday, nextUrl, archivedToday, totalQueued, totalArchived, avgTimeToArchive, data, dataByDay } = this.state;
-    console.log("dataByDay")
-    console.log(dataByDay)
+    const { valid, isQueued, isArchived, queuedToday, nextUrl, archivedToday, totalQueued, totalArchived, avgTimeToArchive, data, dataByDay, dataByHour } = this.state;
+    console.log("dataByHour")
+    console.log(dataByHour)
     return (
       <div>
         <Buttons toggle={this.handleToggle} valid={valid} isQueued={isQueued} isArchived={isArchived}/>
         <Chart data={data} />
         <ChartByDay data={dataByDay} />
+        <ChartByHour data={dataByHour} />
         <small> 
           Today you have added {queuedToday} and archived {archivedToday} items. Total added: {totalQueued}. Total archived: {totalArchived}.
           

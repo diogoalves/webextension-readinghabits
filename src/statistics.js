@@ -13,6 +13,7 @@ export const getStatistics = async () => {
   const data = perDay(queued, archived);
   const avgTimeToArchive = getAvgTimeToArchive(archived);
   const dataByDay = byDay(queued, archived);
+  const dataByHour = byHour(queued, archived);
 
   return ({
     queuedToday,
@@ -21,8 +22,45 @@ export const getStatistics = async () => {
     totalArchived,
     avgTimeToArchive,
     data,
-    dataByDay
+    dataByDay,
+    dataByHour
   });
+}
+
+const byHour = (queued, archived) => {
+  const getKey = timestamp => {
+    const hours = (new Date(timestamp)).getHours();
+    if(hours >= 0 && hours <= 6) return 0;
+    if(hours >= 7 && hours <= 12) return 1;
+    if(hours >= 13 && hours <= 18) return 2;
+    if(hours >= 19 && hours <= 23) return 3;
+    return 4;    
+  }
+
+  const step0 = [ 
+    {label: '[0,6]', queued: 0, archived: 0},
+    {label: '[7,12]', queued: 0, archived: 0},
+    {label: '[13,18]', queued: 0, archived: 0},
+    {label: '[19,23]', queued: 0, archived: 0},
+  ]
+  const step1 = [...queued, ...archived].reduce( (acc, cur) => {
+    const key = getKey(cur.dateAdded);
+    acc[key] = { 
+      ...acc[key],
+      queued: acc[key].queued + 1
+    }
+    return acc;
+  }, step0 );
+  const step2 = archived.reduce( (acc, cur) => {
+    const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
+    const key = getKey(parseInt(archivedTimeStamp, 10));
+    acc[key] = { 
+      ...acc[key],
+      archived: acc[key].archived + 1
+    }
+    return acc;
+  }, step1 );
+  return step2;
 }
 
 const byDay = (queued, archived) => {
