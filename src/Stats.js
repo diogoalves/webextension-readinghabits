@@ -38,10 +38,10 @@ class Stats extends Component {
     const { value, queuedToday, archivedToday, totalQueued, totalArchived, avgTimeToArchive, data, dataByDay, dataByHour } = this.state;
 
     return (
-      <div>
-        <Chart data={data} />
-        <ChartByDay data={dataByDay} />
-        <ChartByHour data={dataByHour} />
+      <div align="center">
+        {value === 0 && <Chart data={data} />}
+        {value === 1 && <ChartByDay data={dataByDay} />}
+        {value === 2 && <ChartByHour data={dataByHour} />}
         <small> 
           Today you have added {queuedToday} and archived {archivedToday} items. Total added: {totalQueued}. Total archived: {totalArchived}.
           
