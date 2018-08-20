@@ -1,14 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import browser from 'webextension-polyfill';
-
-import { getStatistics } from './statistics';
-import Chart from './Chart';
-import ChartByDay from './ChartByDay';
-import ChartByHour from './ChartByHour';
 import Buttons from './Buttons';
 import { getUrlStatus } from './util';
 import { toggle } from './background';
+import Stats from './Stats';
 
 class App extends React.Component {
 
@@ -18,20 +14,11 @@ class App extends React.Component {
     isQueued: false, 
     isArchived: false,
     nextUrl: null,
-    queuedToday: 0,
-    archivedToday: 0,
-    totalQueued: 0,
-    totalArchived: 0,
-    avgTimeToArchive: 0/0,
-    data: null,
-    dataByDay: null,
-    dataByHour: null
   }
 
    componentDidMount = async () => {
     this.setState({ 
-       ...await getUrlStatus(),
-      ...await getStatistics(),
+       ...await getUrlStatus()
     });
   }
 
@@ -39,8 +26,7 @@ class App extends React.Component {
     if(this.state.valid) {
       await toggle(this.state.activeTab);
       this.setState({
-        ...await getUrlStatus(),
-        ...await getStatistics(),
+        ...await getUrlStatus()
       })
     }
   }
@@ -53,28 +39,15 @@ class App extends React.Component {
 
   
   render() {
-    const { valid, isQueued, isArchived, queuedToday, nextUrl, archivedToday, totalQueued, totalArchived, avgTimeToArchive, data, dataByDay, dataByHour } = this.state;
-    console.log("dataByHour")
-    console.log(dataByHour)
+    const { valid, isQueued, isArchived, nextUrl } = this.state;
+
     return (
       <div>
         <Buttons toggle={this.handleToggle} valid={valid} isQueued={isQueued} isArchived={isArchived}/>
-        <Chart data={data} />
-        <ChartByDay data={dataByDay} />
-        <ChartByHour data={dataByHour} />
-        <small> 
-          Today you have added {queuedToday} and archived {archivedToday} items. Total added: {totalQueued}. Total archived: {totalArchived}.
-          
-        </small>  
-        { !isNaN(avgTimeToArchive) && (
-          <small>
-            {' '}Average time to archive: {avgTimeToArchive} hours.
-          </small>
-        )}
         { nextUrl && (
           <button onClick={this.handleNext} className="buttonNext">Open next</button>
         )}
-        
+        <Stats />
       </div>
     );
 

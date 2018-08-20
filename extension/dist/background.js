@@ -60,12 +60,99 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 92);
+/******/ 	return __webpack_require__(__webpack_require__.s = 113);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 38:
+/***/ 113:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.toggle = undefined;
+
+var _webextensionPolyfill = __webpack_require__(43);
+
+var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
+
+var _constants = __webpack_require__(54);
+
+var _util = __webpack_require__(55);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+const update = (() => {
+  var _ref = _asyncToGenerator(function* () {
+    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
+    if (activeTab && (0, _util.isSupportedProtocol)(activeTab.url)) {
+      const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
+      const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
+      if (queueFolderId && archiveFolderId) {
+        const foundBookmark = yield (0, _util.find)(queueFolderId, activeTab.url);
+        const foundArchived = yield (0, _util.find)(archiveFolderId, activeTab.url);
+        const icon = (0, _util.getIcon)(foundBookmark, foundArchived, activeTab.id);
+
+        _webextensionPolyfill2.default.browserAction.setIcon(icon);
+
+        const { length: queuedItemsQuantity } = yield (0, _util.getItems)(queueFolderId);
+        if (queuedItemsQuantity > 0) {
+          _webextensionPolyfill2.default.browserAction.setBadgeText({ text: `${queuedItemsQuantity}` });
+        } else {
+          _webextensionPolyfill2.default.browserAction.setBadgeText({ text: '' });
+        }
+      }
+    }
+  });
+
+  return function update() {
+    return _ref.apply(this, arguments);
+  };
+})();
+
+const toggle = exports.toggle = (() => {
+  var _ref2 = _asyncToGenerator(function* (tab) {
+    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
+    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
+    if (queueFolderId && archiveFolderId) {
+      const foundBookmark = yield (0, _util.find)(queueFolderId, tab.url);
+      const foundArchive = yield (0, _util.find)(archiveFolderId, tab.url);
+
+      if (foundBookmark && !foundArchive) {
+        const archivedDate = Date.now();
+        yield _webextensionPolyfill2.default.bookmarks.update(foundBookmark.id, { title: `${foundBookmark.title}[${archivedDate}]` });
+        yield _webextensionPolyfill2.default.bookmarks.move(foundBookmark.id, { parentId: archiveFolderId });
+      } else if (foundBookmark && foundArchive) yield _webextensionPolyfill2.default.bookmarks.remove(foundBookmark.id);else if (!foundBookmark && foundArchive) {
+        const cleanedTitle = foundArchive.title.substring(0, foundArchive.title.length - 15);
+        yield _webextensionPolyfill2.default.bookmarks.update(foundArchive.id, { title: cleanedTitle });
+        yield _webextensionPolyfill2.default.bookmarks.move(foundArchive.id, { parentId: queueFolderId });
+      } else if (!foundBookmark && !foundArchive) yield _webextensionPolyfill2.default.bookmarks.create({ parentId: queueFolderId, title: tab.title, url: tab.url });
+    }
+  });
+
+  return function toggle(_x) {
+    return _ref2.apply(this, arguments);
+  };
+})();
+
+_webextensionPolyfill2.default.bookmarks.onCreated.addListener(update);
+_webextensionPolyfill2.default.bookmarks.onMoved.addListener(update);
+_webextensionPolyfill2.default.bookmarks.onRemoved.addListener(update);
+_webextensionPolyfill2.default.tabs.onUpdated.addListener(update);
+_webextensionPolyfill2.default.tabs.onActivated.addListener(update);
+_webextensionPolyfill2.default.windows.onFocusChanged.addListener(update);
+
+update();
+
+/***/ }),
+
+/***/ 43:
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
@@ -1266,7 +1353,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
 /***/ }),
 
-/***/ 46:
+/***/ 54:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1280,7 +1367,7 @@ const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
 
 /***/ }),
 
-/***/ 47:
+/***/ 55:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1291,11 +1378,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
-var _webextensionPolyfill = __webpack_require__(38);
+var _webextensionPolyfill = __webpack_require__(43);
 
 var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
 
-var _constants = __webpack_require__(46);
+var _constants = __webpack_require__(54);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1447,93 +1534,6 @@ const getIcon = exports.getIcon = (foundBookmark, foundArchived, tabId) => {
   };
   return icon;
 };
-
-/***/ }),
-
-/***/ 92:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.toggle = undefined;
-
-var _webextensionPolyfill = __webpack_require__(38);
-
-var _webextensionPolyfill2 = _interopRequireDefault(_webextensionPolyfill);
-
-var _constants = __webpack_require__(46);
-
-var _util = __webpack_require__(47);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
-const update = (() => {
-  var _ref = _asyncToGenerator(function* () {
-    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
-    if (activeTab && (0, _util.isSupportedProtocol)(activeTab.url)) {
-      const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
-      const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
-      if (queueFolderId && archiveFolderId) {
-        const foundBookmark = yield (0, _util.find)(queueFolderId, activeTab.url);
-        const foundArchived = yield (0, _util.find)(archiveFolderId, activeTab.url);
-        const icon = (0, _util.getIcon)(foundBookmark, foundArchived, activeTab.id);
-
-        _webextensionPolyfill2.default.browserAction.setIcon(icon);
-
-        const { length: queuedItemsQuantity } = yield (0, _util.getItems)(queueFolderId);
-        if (queuedItemsQuantity > 0) {
-          _webextensionPolyfill2.default.browserAction.setBadgeText({ text: `${queuedItemsQuantity}` });
-        } else {
-          _webextensionPolyfill2.default.browserAction.setBadgeText({ text: '' });
-        }
-      }
-    }
-  });
-
-  return function update() {
-    return _ref.apply(this, arguments);
-  };
-})();
-
-const toggle = exports.toggle = (() => {
-  var _ref2 = _asyncToGenerator(function* (tab) {
-    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
-    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
-    if (queueFolderId && archiveFolderId) {
-      const foundBookmark = yield (0, _util.find)(queueFolderId, tab.url);
-      const foundArchive = yield (0, _util.find)(archiveFolderId, tab.url);
-
-      if (foundBookmark && !foundArchive) {
-        const archivedDate = Date.now();
-        yield _webextensionPolyfill2.default.bookmarks.update(foundBookmark.id, { title: `${foundBookmark.title}[${archivedDate}]` });
-        yield _webextensionPolyfill2.default.bookmarks.move(foundBookmark.id, { parentId: archiveFolderId });
-      } else if (foundBookmark && foundArchive) yield _webextensionPolyfill2.default.bookmarks.remove(foundBookmark.id);else if (!foundBookmark && foundArchive) {
-        const cleanedTitle = foundArchive.title.substring(0, foundArchive.title.length - 15);
-        yield _webextensionPolyfill2.default.bookmarks.update(foundArchive.id, { title: cleanedTitle });
-        yield _webextensionPolyfill2.default.bookmarks.move(foundArchive.id, { parentId: queueFolderId });
-      } else if (!foundBookmark && !foundArchive) yield _webextensionPolyfill2.default.bookmarks.create({ parentId: queueFolderId, title: tab.title, url: tab.url });
-    }
-  });
-
-  return function toggle(_x) {
-    return _ref2.apply(this, arguments);
-  };
-})();
-
-_webextensionPolyfill2.default.bookmarks.onCreated.addListener(update);
-_webextensionPolyfill2.default.bookmarks.onMoved.addListener(update);
-_webextensionPolyfill2.default.bookmarks.onRemoved.addListener(update);
-_webextensionPolyfill2.default.tabs.onUpdated.addListener(update);
-_webextensionPolyfill2.default.tabs.onActivated.addListener(update);
-_webextensionPolyfill2.default.windows.onFocusChanged.addListener(update);
-
-update();
 
 /***/ })
 
