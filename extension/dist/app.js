@@ -8543,7 +8543,7 @@ const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+exports.fixArchivedWithoutTime = exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
 var _webextensionPolyfill = __webpack_require__(43);
 
@@ -8701,6 +8701,22 @@ const getIcon = exports.getIcon = (foundBookmark, foundArchived, tabId) => {
   };
   return icon;
 };
+
+const fixArchivedWithoutTime = exports.fixArchivedWithoutTime = (() => {
+  var _ref8 = _asyncToGenerator(function* (archivedId) {
+    const archived = yield getItems(archivedId);
+    archived.map(function (cur) {
+      if (!cur.title.endsWith("]")) {
+        const archivedDate = Date.now();
+        _webextensionPolyfill2.default.bookmarks.update(cur.id, { title: `${cur.title}[${archivedDate}]` });
+      }
+    });
+  });
+
+  return function fixArchivedWithoutTime(_x5) {
+    return _ref8.apply(this, arguments);
+  };
+})();
 
 /***/ }),
 /* 56 */
@@ -12420,22 +12436,22 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 const update = (() => {
   var _ref = _asyncToGenerator(function* () {
     const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
+    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
+    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
+    const { length: queuedItemsQuantity } = yield (0, _util.getItems)(queueFolderId);
+    if (queuedItemsQuantity > 0) {
+      _webextensionPolyfill2.default.browserAction.setBadgeText({ text: `${queuedItemsQuantity}` });
+    } else {
+      _webextensionPolyfill2.default.browserAction.setBadgeText({ text: '' });
+    }
+    (0, _util.fixArchivedWithoutTime)(archiveFolderId);
+
     if (activeTab && (0, _util.isSupportedProtocol)(activeTab.url)) {
-      const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
-      const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
       if (queueFolderId && archiveFolderId) {
         const foundBookmark = yield (0, _util.find)(queueFolderId, activeTab.url);
         const foundArchived = yield (0, _util.find)(archiveFolderId, activeTab.url);
         const icon = (0, _util.getIcon)(foundBookmark, foundArchived, activeTab.id);
-
         _webextensionPolyfill2.default.browserAction.setIcon(icon);
-
-        const { length: queuedItemsQuantity } = yield (0, _util.getItems)(queueFolderId);
-        if (queuedItemsQuantity > 0) {
-          _webextensionPolyfill2.default.browserAction.setBadgeText({ text: `${queuedItemsQuantity}` });
-        } else {
-          _webextensionPolyfill2.default.browserAction.setBadgeText({ text: '' });
-        }
       }
     }
   });
@@ -12454,8 +12470,6 @@ const toggle = exports.toggle = (() => {
       const foundArchive = yield (0, _util.find)(archiveFolderId, tab.url);
 
       if (foundBookmark && !foundArchive) {
-        const archivedDate = Date.now();
-        yield _webextensionPolyfill2.default.bookmarks.update(foundBookmark.id, { title: `${foundBookmark.title}[${archivedDate}]` });
         yield _webextensionPolyfill2.default.bookmarks.move(foundBookmark.id, { parentId: archiveFolderId });
       } else if (foundBookmark && foundArchive) yield _webextensionPolyfill2.default.bookmarks.remove(foundBookmark.id);else if (!foundBookmark && foundArchive) {
         const cleanedTitle = foundArchive.title.substring(0, foundArchive.title.length - 15);
