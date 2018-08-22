@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill';
 import { QUEUE_FOLDER_NAME, ARCHIVE_FOLDER_NAME } from './constants';
-import { isSupportedProtocol, getItems, find, getIcon} from './util';
+import { isSupportedProtocol, getItems, find, getIcon, fixArchivedWithoutTime } from './util';
 
 const update = async () => {
   const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
@@ -20,6 +20,8 @@ const update = async () => {
       } else {
         browser.browserAction.setBadgeText({text: '' })
       }
+      
+      fixArchivedWithoutTime(archiveFolderId);
     } 
   }
 }
@@ -32,8 +34,6 @@ export const toggle = async (tab) => {
     const foundArchive = await find(archiveFolderId, tab.url);
 
     if(foundBookmark && !foundArchive) { 
-      const archivedDate = Date.now();
-      await browser.bookmarks.update(foundBookmark.id, {title: `${foundBookmark.title}[${archivedDate}]`});  
       await browser.bookmarks.move(foundBookmark.id, {parentId: archiveFolderId});   
     }
     else if(foundBookmark && foundArchive) await browser.bookmarks.remove(foundBookmark.id);
@@ -46,8 +46,6 @@ export const toggle = async (tab) => {
     
   }
 }
-
-
 
 browser.bookmarks.onCreated.addListener(update);
 browser.bookmarks.onMoved.addListener(update);

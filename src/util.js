@@ -101,3 +101,12 @@ export const getIcon = (foundBookmark, foundArchived, tabId) => {
   
 }
 
+export const fixArchivedWithoutTime = async (archivedId) => {
+  const archived = await getItems(archivedId);
+  archived.map( cur => {
+    if(!cur.title.endsWith("]")) {
+      const archivedDate = Date.now();
+      browser.bookmarks.update(cur.id, {title: `${cur.title}[${archivedDate}]`});  
+    }
+  })
+}
