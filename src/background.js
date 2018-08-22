@@ -4,26 +4,24 @@ import { isSupportedProtocol, getItems, find, getIcon, fixArchivedWithoutTime } 
 
 const update = async () => {
   const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
+  const [ { id: queueFolderId } ]= await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});
+  const [ { id : archiveFolderId } ] = await browser.bookmarks.search({title: ARCHIVE_FOLDER_NAME});
+  const { length : queuedItemsQuantity } = await getItems(queueFolderId);
+  if(queuedItemsQuantity > 0) {
+    browser.browserAction.setBadgeText({text: `${queuedItemsQuantity}` })
+  } else {
+    browser.browserAction.setBadgeText({text: '' })
+  }
+  fixArchivedWithoutTime(archiveFolderId);
+
   if (activeTab && isSupportedProtocol(activeTab.url)) {
-    const [ { id: queueFolderId } ]= await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});
-    const [ { id : archiveFolderId } ] = await browser.bookmarks.search({title: ARCHIVE_FOLDER_NAME});
     if(queueFolderId && archiveFolderId) {
       const foundBookmark = await find(queueFolderId, activeTab.url);
       const foundArchived = await find(archiveFolderId, activeTab.url);
       const icon = getIcon(foundBookmark, foundArchived, activeTab.id);
-
       browser.browserAction.setIcon(icon);
-
-      const { length : queuedItemsQuantity } = await getItems(queueFolderId);
-      if(queuedItemsQuantity > 0) {
-        browser.browserAction.setBadgeText({text: `${queuedItemsQuantity}` })
-      } else {
-        browser.browserAction.setBadgeText({text: '' })
-      }
-      
-      fixArchivedWithoutTime(archiveFolderId);
     } 
-  }
+  } 
 }
 
 export const toggle = async (tab) => {
@@ -55,4 +53,3 @@ browser.tabs.onActivated.addListener(update);
 browser.windows.onFocusChanged.addListener(update);
 
 update();
-
