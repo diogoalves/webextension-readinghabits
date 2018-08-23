@@ -6,7 +6,7 @@
   "homepage_url": "https://github.com/diogoalves/webextension-readinghabits",
   "applications": {
     "gecko": {
-       "id": "reading-habits@dj.ca"
+       "id": "{0db2b632-f7b0-4d50-92a5-4ec55263053b}"
     }
  },
   "icons": {

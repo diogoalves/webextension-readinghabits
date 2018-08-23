@@ -88,6 +88,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
+const xxx = "asd";
+
 const update = (() => {
   var _ref = _asyncToGenerator(function* () {
     const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
@@ -1374,7 +1376,7 @@ const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fixArchivedWithoutTime = exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+exports.fixArchivedWithoutTime = exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getAll = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
 var _webextensionPolyfill = __webpack_require__(43);
 
@@ -1460,8 +1462,25 @@ const getItems = exports.getItems = (() => {
   };
 })();
 
+const getAll = exports.getAll = (() => {
+  var _ref6 = _asyncToGenerator(function* () {
+    const queueFolderId = yield getFolderId(_constants.QUEUE_FOLDER_NAME);
+    const archiveFolderId = yield getFolderId(_constants.ARCHIVE_FOLDER_NAME);
+    const [{ children: queued }] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(queueFolderId);
+    const [{ children: archived }] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(archiveFolderId);
+    return {
+      queued,
+      archived
+    };
+  });
+
+  return function getAll() {
+    return _ref6.apply(this, arguments);
+  };
+})();
+
 const find = exports.find = (() => {
-  var _ref6 = _asyncToGenerator(function* (folderId, url) {
+  var _ref7 = _asyncToGenerator(function* (folderId, url) {
     const items = yield getItems(folderId);
     return items.find(function (e) {
       return e.url === url;
@@ -1469,12 +1488,12 @@ const find = exports.find = (() => {
   });
 
   return function find(_x3, _x4) {
-    return _ref6.apply(this, arguments);
+    return _ref7.apply(this, arguments);
   };
 })();
 
 const getUrlStatus = exports.getUrlStatus = (() => {
-  var _ref7 = _asyncToGenerator(function* () {
+  var _ref8 = _asyncToGenerator(function* () {
     const activeTab = yield getActiveTab();
     const { queueFolderId, archiveFolderId } = yield getFoldersIds();
     if (activeTab) {
@@ -1504,7 +1523,7 @@ const getUrlStatus = exports.getUrlStatus = (() => {
   });
 
   return function getUrlStatus() {
-    return _ref7.apply(this, arguments);
+    return _ref8.apply(this, arguments);
   };
 })();
 
@@ -1534,7 +1553,7 @@ const getIcon = exports.getIcon = (foundBookmark, foundArchived, tabId) => {
 };
 
 const fixArchivedWithoutTime = exports.fixArchivedWithoutTime = (() => {
-  var _ref8 = _asyncToGenerator(function* (archivedId) {
+  var _ref9 = _asyncToGenerator(function* (archivedId) {
     const archived = yield getItems(archivedId);
     archived.map(function (cur) {
       if (!cur.title.endsWith("]")) {
@@ -1545,7 +1564,7 @@ const fixArchivedWithoutTime = exports.fixArchivedWithoutTime = (() => {
   });
 
   return function fixArchivedWithoutTime(_x5) {
-    return _ref8.apply(this, arguments);
+    return _ref9.apply(this, arguments);
   };
 })();
 

@@ -8543,7 +8543,7 @@ const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fixArchivedWithoutTime = exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+exports.fixArchivedWithoutTime = exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getAll = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
 var _webextensionPolyfill = __webpack_require__(43);
 
@@ -8629,8 +8629,25 @@ const getItems = exports.getItems = (() => {
   };
 })();
 
+const getAll = exports.getAll = (() => {
+  var _ref6 = _asyncToGenerator(function* () {
+    const queueFolderId = yield getFolderId(_constants.QUEUE_FOLDER_NAME);
+    const archiveFolderId = yield getFolderId(_constants.ARCHIVE_FOLDER_NAME);
+    const [{ children: queued }] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(queueFolderId);
+    const [{ children: archived }] = yield _webextensionPolyfill2.default.bookmarks.getSubTree(archiveFolderId);
+    return {
+      queued,
+      archived
+    };
+  });
+
+  return function getAll() {
+    return _ref6.apply(this, arguments);
+  };
+})();
+
 const find = exports.find = (() => {
-  var _ref6 = _asyncToGenerator(function* (folderId, url) {
+  var _ref7 = _asyncToGenerator(function* (folderId, url) {
     const items = yield getItems(folderId);
     return items.find(function (e) {
       return e.url === url;
@@ -8638,12 +8655,12 @@ const find = exports.find = (() => {
   });
 
   return function find(_x3, _x4) {
-    return _ref6.apply(this, arguments);
+    return _ref7.apply(this, arguments);
   };
 })();
 
 const getUrlStatus = exports.getUrlStatus = (() => {
-  var _ref7 = _asyncToGenerator(function* () {
+  var _ref8 = _asyncToGenerator(function* () {
     const activeTab = yield getActiveTab();
     const { queueFolderId, archiveFolderId } = yield getFoldersIds();
     if (activeTab) {
@@ -8673,7 +8690,7 @@ const getUrlStatus = exports.getUrlStatus = (() => {
   });
 
   return function getUrlStatus() {
-    return _ref7.apply(this, arguments);
+    return _ref8.apply(this, arguments);
   };
 })();
 
@@ -8703,7 +8720,7 @@ const getIcon = exports.getIcon = (foundBookmark, foundArchived, tabId) => {
 };
 
 const fixArchivedWithoutTime = exports.fixArchivedWithoutTime = (() => {
-  var _ref8 = _asyncToGenerator(function* (archivedId) {
+  var _ref9 = _asyncToGenerator(function* (archivedId) {
     const archived = yield getItems(archivedId);
     archived.map(function (cur) {
       if (!cur.title.endsWith("]")) {
@@ -8714,7 +8731,7 @@ const fixArchivedWithoutTime = exports.fixArchivedWithoutTime = (() => {
   });
 
   return function fixArchivedWithoutTime(_x5) {
-    return _ref8.apply(this, arguments);
+    return _ref9.apply(this, arguments);
   };
 })();
 
@@ -12432,6 +12449,8 @@ var _util = __webpack_require__(55);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
+const xxx = "asd";
 
 const update = (() => {
   var _ref = _asyncToGenerator(function* () {
@@ -28077,13 +28096,18 @@ class App extends _react2.default.Component {
       valid: null,
       isQueued: false,
       isArchived: false,
-      nextUrl: null
+      nextUrl: null,
+      items: null
     }, this.componentDidMount = _asyncToGenerator(function* () {
-      _this.setState(_extends({}, (yield (0, _util.getUrlStatus)())));
+      _this.setState(_extends({}, (yield (0, _util.getUrlStatus)()), {
+        items: yield (0, _util.getAll)()
+      }));
     }), this.handleToggle = _asyncToGenerator(function* () {
       if (_this.state.valid) {
         yield (0, _background.toggle)(_this.state.activeTab);
-        _this.setState(_extends({}, (yield (0, _util.getUrlStatus)())));
+        _this.setState(_extends({}, (yield (0, _util.getUrlStatus)()), {
+          items: yield (0, _util.getAll)()
+        }));
       }
     }), this.handleNext = () => {
       const { nextUrl: url } = this.state;
@@ -28093,8 +28117,7 @@ class App extends _react2.default.Component {
   }
 
   render() {
-    const { valid, isQueued, isArchived, nextUrl } = this.state;
-
+    const { valid, isQueued, isArchived, nextUrl, items } = this.state;
     return _react2.default.createElement(
       'div',
       null,
@@ -28104,7 +28127,7 @@ class App extends _react2.default.Component {
         { onClick: this.handleNext, className: 'buttonNext' },
         'Open next'
       ),
-      _react2.default.createElement(_Stats2.default, null)
+      _react2.default.createElement(_Stats2.default, { items: items })
     );
   }
 }
@@ -28723,8 +28746,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
@@ -28749,9 +28770,9 @@ var _AccessTime = __webpack_require__(406);
 
 var _AccessTime2 = _interopRequireDefault(_AccessTime);
 
-var _Chart = __webpack_require__(407);
+var _ChartAccumulated = __webpack_require__(794);
 
-var _Chart2 = _interopRequireDefault(_Chart);
+var _ChartAccumulated2 = _interopRequireDefault(_ChartAccumulated);
 
 var _ChartByDay = __webpack_require__(791);
 
@@ -28761,42 +28782,36 @@ var _ChartByHour = __webpack_require__(792);
 
 var _ChartByHour2 = _interopRequireDefault(_ChartByHour);
 
-var _statistics = __webpack_require__(793);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 class Stats extends _react.Component {
   constructor(...args) {
-    var _temp, _this;
+    var _temp;
 
-    return _temp = _this = super(...args), this.state = {
-      value: 0,
-      queuedToday: 0,
-      archivedToday: 0,
-      totalQueued: 0,
-      totalArchived: 0,
-      avgTimeToArchive: 0 / 0,
-      data: null,
-      dataByDay: null,
-      dataByHour: null
-    }, this.componentDidMount = _asyncToGenerator(function* () {
-      _this.setState(_extends({}, (yield (0, _statistics.getStatistics)())));
-    }), this.handleChange = (event, value) => {
+    return _temp = super(...args), this.state = {
+      value: 0
+    }, this.handleChange = (event, value) => {
       this.setState({ value });
     }, _temp;
   }
 
   render() {
-    const { value, queuedToday, archivedToday, totalQueued, totalArchived, avgTimeToArchive, data, dataByDay, dataByHour } = this.state;
+    if (!this.props.items) return null;
+    const { value } = this.state;
+    const { items } = this.props;
+    const today = new Date().toLocaleDateString();
+    const totalQueued = items.queued.length + items.archived.length;
+    const totalArchived = items.archived.length;
+    const queuedToday = items.queued.concat(items.archived).filter(e => new Date(e.dateAdded).toLocaleDateString() === today).length;
+    const archivedToday = items.archived.filter(e => new Date(e.dateAdded).toLocaleDateString() === today).length;
+    const avgTimeToArchive = getAvgTimeToArchive(items.archived);
 
     return _react2.default.createElement(
       'div',
       { align: 'center' },
-      value === 0 && _react2.default.createElement(_Chart2.default, { data: data }),
-      value === 1 && _react2.default.createElement(_ChartByDay2.default, { data: dataByDay }),
-      value === 2 && _react2.default.createElement(_ChartByHour2.default, { data: dataByHour }),
+      value === 0 && _react2.default.createElement(_ChartAccumulated2.default, { items: items }),
+      value === 1 && _react2.default.createElement(_ChartByDay2.default, { items: items }),
+      value === 2 && _react2.default.createElement(_ChartByHour2.default, { items: items }),
       _react2.default.createElement(
         'small',
         null,
@@ -28832,6 +28847,16 @@ class Stats extends _react.Component {
     );
   }
 }
+
+const getAvgTimeToArchive = archived => {
+  const qty = archived.length;
+  const avg = archived.reduce((acc, cur) => {
+    const createdAt = parseInt(cur.dateAdded, 10);
+    const archivedAt = parseInt(cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', ''), 10);
+    return acc + (archivedAt - createdAt);
+  }, 0);
+  return Math.floor(avg / qty / 1000 / 60 / 60);
+};
 
 exports.default = Stats;
 
@@ -35879,44 +35904,7 @@ var _default = (0, _createSvgIcon.default)(_react.default.createElement(_react.d
 exports.default = _default;
 
 /***/ }),
-/* 407 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _react = __webpack_require__(0);
-
-var _react2 = _interopRequireDefault(_react);
-
-var _recharts = __webpack_require__(124);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class Chart extends _react.Component {
-
-  render() {
-    const { data } = this.props;
-
-    return _react2.default.createElement(
-      _recharts.ComposedChart,
-      { width: 350, height: 200, data: data, margin: { top: 20, right: 5, bottom: 20, left: 5 } },
-      _react2.default.createElement(_recharts.CartesianGrid, { stroke: '#f5f5f5' }),
-      _react2.default.createElement(_recharts.Tooltip, null),
-      _react2.default.createElement(_recharts.Area, { type: 'monotone', dataKey: 'accumulated', fill: '#c7b9e2', stroke: '#c7b9e2' }),
-      _react2.default.createElement(_recharts.Bar, { dataKey: 'queued', barSize: 4, fill: 'rgb(73, 127, 243)' }),
-      _react2.default.createElement(_recharts.Bar, { dataKey: 'archived', barSize: 4, fill: 'rgb(243, 79, 73)' })
-    );
-  }
-}
-
-exports.default = Chart;
-
-/***/ }),
+/* 407 */,
 /* 408 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -53692,6 +53680,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
@@ -53701,9 +53691,34 @@ var _recharts = __webpack_require__(124);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class ChartByDay extends _react.Component {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this.process = items => {
+      const { queued, archived } = items;
+      const step0 = [{ label: 'sun', queued: 0, archived: 0 }, { label: 'mon', queued: 0, archived: 0 }, { label: 'tue', queued: 0, archived: 0 }, { label: 'wed', queued: 0, archived: 0 }, { label: 'thu', queued: 0, archived: 0 }, { label: 'fri', queued: 0, archived: 0 }, { label: 'sat', queued: 0, archived: 0 }];
+      const step1 = [...queued, ...archived].reduce((acc, cur) => {
+        const key = new Date(cur.dateAdded).getDay();
+        acc[key] = _extends({}, acc[key], {
+          queued: acc[key].queued + 1
+        });
+        return acc;
+      }, step0);
+      const step2 = archived.reduce((acc, cur) => {
+        const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
+        const key = new Date(parseInt(archivedTimeStamp, 10)).getDay();
+        acc[key] = _extends({}, acc[key], {
+          archived: acc[key].archived + 1
+        });
+        return acc;
+      }, step1);
+      return step2;
+    }, _temp;
+  }
 
   render() {
-    const { data } = this.props;
+    if (!this.props.items) return null;
+    const data = this.process(this.props.items);
 
     return _react2.default.createElement(
       _recharts.ComposedChart,
@@ -53730,6 +53745,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
@@ -53739,9 +53756,43 @@ var _recharts = __webpack_require__(124);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class ChartByHour extends _react.Component {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this.process = items => {
+      const { queued, archived } = items;
+      const getKey = timestamp => {
+        const hours = new Date(timestamp).getHours();
+        if (hours >= 0 && hours <= 6) return 0;
+        if (hours >= 7 && hours <= 12) return 1;
+        if (hours >= 13 && hours <= 18) return 2;
+        if (hours >= 19 && hours <= 23) return 3;
+        return 4;
+      };
+
+      const step0 = [{ label: '[0,6]', queued: 0, archived: 0 }, { label: '[7,12]', queued: 0, archived: 0 }, { label: '[13,18]', queued: 0, archived: 0 }, { label: '[19,23]', queued: 0, archived: 0 }];
+      const step1 = [...queued, ...archived].reduce((acc, cur) => {
+        const key = getKey(cur.dateAdded);
+        acc[key] = _extends({}, acc[key], {
+          queued: acc[key].queued + 1
+        });
+        return acc;
+      }, step0);
+      const step2 = archived.reduce((acc, cur) => {
+        const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
+        const key = getKey(parseInt(archivedTimeStamp, 10));
+        acc[key] = _extends({}, acc[key], {
+          archived: acc[key].archived + 1
+        });
+        return acc;
+      }, step1);
+      return step2;
+    }, _temp;
+  }
 
   render() {
-    const { data } = this.props;
+    if (!this.props.items) return null;
+    const data = this.process(this.props.items);
 
     return _react2.default.createElement(
       _recharts.ComposedChart,
@@ -53758,7 +53809,8 @@ class ChartByHour extends _react.Component {
 exports.default = ChartByHour;
 
 /***/ }),
-/* 793 */
+/* 793 */,
+/* 794 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -53767,156 +53819,88 @@ exports.default = ChartByHour;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getStatistics = undefined;
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _recharts = __webpack_require__(124);
+
 var _util = __webpack_require__(55);
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const getStatistics = exports.getStatistics = (() => {
-  var _ref = _asyncToGenerator(function* () {
-    const { queueFolderId, archiveFolderId } = yield (0, _util.getFoldersIds)();
-    const queued = yield (0, _util.getItems)(queueFolderId);
-    const archived = yield (0, _util.getItems)(archiveFolderId);
-    const today = new Date().toLocaleDateString();
+class ChartAccumulated extends _react.Component {
+  constructor(...args) {
+    var _temp;
 
-    const totalQueued = queued.length + archived.length;
-    const totalArchived = archived.length;
-    const queuedToday = queued.concat(archived).filter(function (e) {
-      return new Date(e.dateAdded).toLocaleDateString() === today;
-    }).length;
-    const archivedToday = archived.filter(function (e) {
-      return new Date(e.dateAdded).toLocaleDateString() === today;
-    }).length;
-    const data = perDay(queued, archived);
-    const avgTimeToArchive = getAvgTimeToArchive(archived);
-    const dataByDay = byDay(queued, archived);
-    const dataByHour = byHour(queued, archived);
+    return _temp = super(...args), this.process = items => {
+      const { queued, archived } = items;
+      const step1 = queued.reduce((acc, cur) => {
+        const key = (0, _util.convertDate)(new Date(cur.dateAdded));
+        acc[key] = {
+          date: key,
+          queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,
+          accumulated: acc[key] && acc[key].accumulated ? acc[key].accumulated + 1 : 1,
+          archived: 0
+        };
+        return acc;
+      }, {});
+      const step2 = archived.reduce((acc, cur) => {
+        const key = (0, _util.convertDate)(new Date(cur.dateAdded));
+        const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
+        const keyArchived = (0, _util.convertDate)(new Date(parseInt(archivedTimeStamp, 10)));
+        acc[key] = {
+          date: key,
+          queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,
+          accumulated: acc[key] && acc[key].accumulated ? acc[key].accumulated : 0,
+          archived: acc[key] && acc[key].archived ? acc[key].archived : 0
+        };
+        acc[keyArchived] = {
+          date: keyArchived,
+          queued: acc[keyArchived] && acc[keyArchived].queued ? acc[keyArchived].queued : 0,
+          accumulated: acc[keyArchived] && acc[keyArchived].accumulated ? acc[keyArchived].accumulated : 0,
+          archived: acc[keyArchived] && acc[keyArchived].archived ? acc[keyArchived].archived + 1 : 1
+        };
+        return acc;
+      }, step1);
+      const step3 = Object.values(step2);
+      const step4 = step3.sort((a, b) => {
+        if (a.date > b.date) return 1;
+        if (a.date < b.date) return -1;
+        return 0;
+      });
+      const step5 = step4.reduce((acc, cur, index) => {
+        if (acc[index - 1]) {
+          return acc.concat(_extends({}, cur, {
+            accumulated: cur.accumulated + acc[index - 1].accumulated
+          }));
+        } else {
+          return acc.concat(cur);
+        }
+      }, []);
+      return step5;
+    }, _temp;
+  }
 
-    return {
-      queuedToday,
-      archivedToday,
-      totalQueued,
-      totalArchived,
-      avgTimeToArchive,
-      data,
-      dataByDay,
-      dataByHour
-    };
-  });
+  render() {
+    if (!this.props.items) return null;
+    const data = this.process(this.props.items);
+    return _react2.default.createElement(
+      _recharts.ComposedChart,
+      { width: 350, height: 200, data: data, margin: { top: 20, right: 5, bottom: 20, left: 5 } },
+      _react2.default.createElement(_recharts.CartesianGrid, { stroke: '#f5f5f5' }),
+      _react2.default.createElement(_recharts.Tooltip, null),
+      _react2.default.createElement(_recharts.Area, { type: 'monotone', dataKey: 'accumulated', fill: '#c7b9e2', stroke: '#c7b9e2' }),
+      _react2.default.createElement(_recharts.Bar, { dataKey: 'queued', barSize: 4, fill: 'rgb(73, 127, 243)' }),
+      _react2.default.createElement(_recharts.Bar, { dataKey: 'archived', barSize: 4, fill: 'rgb(243, 79, 73)' })
+    );
+  }
+}
 
-  return function getStatistics() {
-    return _ref.apply(this, arguments);
-  };
-})();
-
-const byHour = (queued, archived) => {
-  const getKey = timestamp => {
-    const hours = new Date(timestamp).getHours();
-    if (hours >= 0 && hours <= 6) return 0;
-    if (hours >= 7 && hours <= 12) return 1;
-    if (hours >= 13 && hours <= 18) return 2;
-    if (hours >= 19 && hours <= 23) return 3;
-    return 4;
-  };
-
-  const step0 = [{ label: '[0,6]', queued: 0, archived: 0 }, { label: '[7,12]', queued: 0, archived: 0 }, { label: '[13,18]', queued: 0, archived: 0 }, { label: '[19,23]', queued: 0, archived: 0 }];
-  const step1 = [...queued, ...archived].reduce((acc, cur) => {
-    const key = getKey(cur.dateAdded);
-    acc[key] = _extends({}, acc[key], {
-      queued: acc[key].queued + 1
-    });
-    return acc;
-  }, step0);
-  const step2 = archived.reduce((acc, cur) => {
-    const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
-    const key = getKey(parseInt(archivedTimeStamp, 10));
-    acc[key] = _extends({}, acc[key], {
-      archived: acc[key].archived + 1
-    });
-    return acc;
-  }, step1);
-  return step2;
-};
-
-const byDay = (queued, archived) => {
-  const step0 = [{ label: 'sun', queued: 0, archived: 0 }, { label: 'mon', queued: 0, archived: 0 }, { label: 'tue', queued: 0, archived: 0 }, { label: 'wed', queued: 0, archived: 0 }, { label: 'thu', queued: 0, archived: 0 }, { label: 'fri', queued: 0, archived: 0 }, { label: 'sat', queued: 0, archived: 0 }];
-  const step1 = [...queued, ...archived].reduce((acc, cur) => {
-    const key = new Date(cur.dateAdded).getDay();
-    acc[key] = _extends({}, acc[key], {
-      queued: acc[key].queued + 1
-    });
-    return acc;
-  }, step0);
-  const step2 = archived.reduce((acc, cur) => {
-    const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
-    const key = new Date(parseInt(archivedTimeStamp, 10)).getDay();
-    acc[key] = _extends({}, acc[key], {
-      archived: acc[key].archived + 1
-    });
-    return acc;
-  }, step1);
-  return step2;
-};
-
-const perDay = (queuedPerDay, archivedPerDay) => {
-  const step1 = queuedPerDay.reduce((acc, cur) => {
-    const key = (0, _util.convertDate)(new Date(cur.dateAdded));
-    acc[key] = {
-      date: key,
-      queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,
-      accumulated: acc[key] && acc[key].accumulated ? acc[key].accumulated + 1 : 1,
-      archived: 0
-    };
-    return acc;
-  }, {});
-  const step2 = archivedPerDay.reduce((acc, cur) => {
-    const key = (0, _util.convertDate)(new Date(cur.dateAdded));
-    const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
-    const keyArchived = (0, _util.convertDate)(new Date(parseInt(archivedTimeStamp, 10)));
-    acc[key] = {
-      date: key,
-      queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,
-      accumulated: acc[key] && acc[key].accumulated ? acc[key].accumulated : 0,
-      archived: acc[key] && acc[key].archived ? acc[key].archived : 0
-    };
-    acc[keyArchived] = {
-      date: keyArchived,
-      queued: acc[keyArchived] && acc[keyArchived].queued ? acc[keyArchived].queued : 0,
-      accumulated: acc[keyArchived] && acc[keyArchived].accumulated ? acc[keyArchived].accumulated : 0,
-      archived: acc[keyArchived] && acc[keyArchived].archived ? acc[keyArchived].archived + 1 : 1
-    };
-    return acc;
-  }, step1);
-  const step3 = Object.values(step2);
-  const step4 = step3.sort((a, b) => {
-    if (a.date > b.date) return 1;
-    if (a.date < b.date) return -1;
-    return 0;
-  });
-  const step5 = step4.reduce((acc, cur, index) => {
-    if (acc[index - 1]) {
-      return acc.concat(_extends({}, cur, {
-        accumulated: cur.accumulated + acc[index - 1].accumulated
-      }));
-    } else {
-      return acc.concat(cur);
-    }
-  }, []);
-  return step5;
-};
-
-const getAvgTimeToArchive = archived => {
-  const qty = archived.length;
-  const avg = archived.reduce((acc, cur) => {
-    const createdAt = parseInt(cur.dateAdded, 10);
-    const archivedAt = parseInt(cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', ''), 10);
-    return acc + (archivedAt - createdAt);
-  }, 0);
-  return Math.floor(avg / qty / 1000 / 60 / 60);
-};
+exports.default = ChartAccumulated;
 
 /***/ })
 /******/ ]);

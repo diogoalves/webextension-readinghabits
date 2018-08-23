@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import browser from 'webextension-polyfill';
 import Buttons from './Buttons';
-import { getUrlStatus } from './util';
+import { getUrlStatus, getAll } from './util';
 import { toggle } from './background';
 import Stats from './Stats';
 
@@ -14,11 +14,13 @@ class App extends React.Component {
     isQueued: false, 
     isArchived: false,
     nextUrl: null,
+    items: null,
   }
 
    componentDidMount = async () => {
     this.setState({ 
-       ...await getUrlStatus()
+       ...await getUrlStatus(),
+       items: await getAll()
     });
   }
 
@@ -26,7 +28,8 @@ class App extends React.Component {
     if(this.state.valid) {
       await toggle(this.state.activeTab);
       this.setState({
-        ...await getUrlStatus()
+        ...await getUrlStatus(),
+        items: await getAll()
       })
     }
   }
@@ -39,15 +42,14 @@ class App extends React.Component {
 
   
   render() {
-    const { valid, isQueued, isArchived, nextUrl } = this.state;
-
+    const { valid, isQueued, isArchived, nextUrl, items } = this.state;
     return (
       <div>
         <Buttons toggle={this.handleToggle} valid={valid} isQueued={isQueued} isArchived={isArchived}/>
         { nextUrl && (
           <button onClick={this.handleNext} className="buttonNext">Open next</button>
         )}
-        <Stats />
+        <Stats items={items} />
       </div>
     );
 

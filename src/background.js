@@ -2,6 +2,8 @@ import browser from 'webextension-polyfill';
 import { QUEUE_FOLDER_NAME, ARCHIVE_FOLDER_NAME } from './constants';
 import { isSupportedProtocol, getItems, find, getIcon, fixArchivedWithoutTime } from './util';
 
+const xxx = "asd"
+
 const update = async () => {
   const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
   const [ { id: queueFolderId } ]= await browser.bookmarks.search({title: QUEUE_FOLDER_NAME});

@@ -9,8 +9,8 @@ export const isSupportedProtocol = urlString => {
 }
 
 export const getActiveTab = async () => {
-  const [ activeTab ] = await browser.tabs.query({active: true, currentWindow: true});
-  if(activeTab && isSupportedProtocol(activeTab.url)) {
+  const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
+  if (activeTab && isSupportedProtocol(activeTab.url)) {
     return activeTab;
   } else {
     return null;
@@ -19,15 +19,15 @@ export const getActiveTab = async () => {
 
 export const getValidTabs = async () => {
   const tabs = await browser.tabs.query({});
-  return tabs.filter( e => isSupportedProtocol(e.url));
+  return tabs.filter(e => isSupportedProtocol(e.url));
 }
 
 export const getFolderId = async folderName => {
-  const [ found ] = await browser.bookmarks.search({title: folderName});
-  if(found) {
+  const [found] = await browser.bookmarks.search({ title: folderName });
+  if (found) {
     return found.id;
   } else {
-    const newFolder = await browser.bookmarks.create({title: folderName});
+    const newFolder = await browser.bookmarks.create({ title: folderName });
     return newFolder.id;
   }
 }
@@ -39,23 +39,34 @@ export const getFoldersIds = async () => {
 };
 
 export const getItems = async folderId => {
-  const  [ result ] = await browser.bookmarks.getSubTree(folderId);
+  const [result] = await browser.bookmarks.getSubTree(folderId);
   return result.children;
+}
+
+export const getAll = async () => {
+  const queueFolderId = await getFolderId(QUEUE_FOLDER_NAME);
+  const archiveFolderId = await getFolderId(ARCHIVE_FOLDER_NAME);
+  const [{ children: queued }] = await browser.bookmarks.getSubTree(queueFolderId);
+  const [{ children: archived }] = await browser.bookmarks.getSubTree(archiveFolderId);
+  return ({
+    queued,
+    archived
+  });
 }
 
 export const find = async (folderId, url) => {
   const items = await getItems(folderId);
-  return items.find( e => e.url === url);
+  return items.find(e => e.url === url);
 }
 
 export const getUrlStatus = async () => {
   const activeTab = await getActiveTab();
   const { queueFolderId, archiveFolderId } = await getFoldersIds();
-  if(activeTab) {
+  if (activeTab) {
     const isQueued = await find(queueFolderId, activeTab.url);
     const isArchived = await find(archiveFolderId, activeTab.url);
     const queue = await getItems(queueFolderId);
-    const nextInQueue = queue.find( e => e.url !== activeTab.url );
+    const nextInQueue = queue.find(e => e.url !== activeTab.url);
     return ({
       valid: activeTab !== null,
       activeTab,
@@ -77,19 +88,19 @@ export const getUrlStatus = async () => {
 
 export const convertDate = date => {
   var yyyy = date.getFullYear().toString();
-  var mm = (date.getMonth()+1).toString();
-  var dd  = date.getDate().toString();
+  var mm = (date.getMonth() + 1).toString();
+  var dd = date.getDate().toString();
 
   var mmChars = mm.split('');
   var ddChars = dd.split('');
 
-  return yyyy + '-' + (mmChars[1]?mm:"0"+mmChars[0]) + '-' + (ddChars[1]?dd:"0"+ddChars[0]);
+  return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
 }
 
 export const getIcon = (foundBookmark, foundArchived, tabId) => {
   let prefix = 'empty';
-  if(foundBookmark) prefix = 'queued';
-  if(foundArchived) prefix = 'archived';
+  if (foundBookmark) prefix = 'queued';
+  if (foundArchived) prefix = 'archived';
   const icon = {
     path: {
       19: `icons/${prefix}-19.png`,
@@ -98,15 +109,15 @@ export const getIcon = (foundBookmark, foundArchived, tabId) => {
     tabId
   };
   return icon;
-  
+
 }
 
 export const fixArchivedWithoutTime = async (archivedId) => {
   const archived = await getItems(archivedId);
-  archived.map( cur => {
-    if(!cur.title.endsWith("]")) {
+  archived.map(cur => {
+    if (!cur.title.endsWith("]")) {
       const archivedDate = Date.now();
-      browser.bookmarks.update(cur.id, {title: `${cur.title}[${archivedDate}]`});  
+      browser.bookmarks.update(cur.id, { title: `${cur.title}[${archivedDate}]` });
     }
   })
 }
