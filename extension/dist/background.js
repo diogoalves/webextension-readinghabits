@@ -88,13 +88,20 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-const xxx = "asd";
+const xxx = 'asd';
 
 const update = (() => {
   var _ref = _asyncToGenerator(function* () {
-    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
-    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
-    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
+    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({
+      active: true,
+      currentWindow: true
+    });
+    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({
+      title: _constants.QUEUE_FOLDER_NAME
+    });
+    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({
+      title: _constants.ARCHIVE_FOLDER_NAME
+    });
     const { length: queuedItemsQuantity } = yield (0, _util.getItems)(queueFolderId);
     if (queuedItemsQuantity > 0) {
       _webextensionPolyfill2.default.browserAction.setBadgeText({ text: `${queuedItemsQuantity}` });
@@ -120,19 +127,31 @@ const update = (() => {
 
 const toggle = exports.toggle = (() => {
   var _ref2 = _asyncToGenerator(function* (tab) {
-    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
-    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
+    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({
+      title: _constants.QUEUE_FOLDER_NAME
+    });
+    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({
+      title: _constants.ARCHIVE_FOLDER_NAME
+    });
     if (queueFolderId && archiveFolderId) {
       const foundBookmark = yield (0, _util.find)(queueFolderId, tab.url);
       const foundArchive = yield (0, _util.find)(archiveFolderId, tab.url);
 
       if (foundBookmark && !foundArchive) {
-        yield _webextensionPolyfill2.default.bookmarks.move(foundBookmark.id, { parentId: archiveFolderId });
+        yield _webextensionPolyfill2.default.bookmarks.move(foundBookmark.id, {
+          parentId: archiveFolderId
+        });
       } else if (foundBookmark && foundArchive) yield _webextensionPolyfill2.default.bookmarks.remove(foundBookmark.id);else if (!foundBookmark && foundArchive) {
         const cleanedTitle = foundArchive.title.substring(0, foundArchive.title.length - 15);
         yield _webextensionPolyfill2.default.bookmarks.update(foundArchive.id, { title: cleanedTitle });
-        yield _webextensionPolyfill2.default.bookmarks.move(foundArchive.id, { parentId: queueFolderId });
-      } else if (!foundBookmark && !foundArchive) yield _webextensionPolyfill2.default.bookmarks.create({ parentId: queueFolderId, title: tab.title, url: tab.url });
+        yield _webextensionPolyfill2.default.bookmarks.move(foundArchive.id, {
+          parentId: queueFolderId
+        });
+      } else if (!foundBookmark && !foundArchive) yield _webextensionPolyfill2.default.bookmarks.create({
+        parentId: queueFolderId,
+        title: tab.title,
+        url: tab.url
+      });
     }
   });
 
@@ -1389,7 +1408,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
-  var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
+  var supportedProtocols = ['https:', 'http:', 'ftp:', 'file:'];
   var url = document.createElement('a');
   url.href = urlString;
   return supportedProtocols.indexOf(url.protocol) != -1;
@@ -1397,7 +1416,10 @@ const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
 
 const getActiveTab = exports.getActiveTab = (() => {
   var _ref = _asyncToGenerator(function* () {
-    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
+    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({
+      active: true,
+      currentWindow: true
+    });
     if (activeTab && isSupportedProtocol(activeTab.url)) {
       return activeTab;
     } else {
@@ -1535,7 +1557,7 @@ const convertDate = exports.convertDate = date => {
   var mmChars = mm.split('');
   var ddChars = dd.split('');
 
-  return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
+  return yyyy + '-' + (mmChars[1] ? mm : '0' + mmChars[0]) + '-' + (ddChars[1] ? dd : '0' + ddChars[0]);
 };
 
 const getIcon = exports.getIcon = (foundBookmark, foundArchived, tabId) => {
@@ -1556,9 +1578,11 @@ const fixArchivedWithoutTime = exports.fixArchivedWithoutTime = (() => {
   var _ref9 = _asyncToGenerator(function* (archivedId) {
     const archived = yield getItems(archivedId);
     archived.map(function (cur) {
-      if (!cur.title.endsWith("]")) {
+      if (!cur.title.endsWith(']')) {
         const archivedDate = Date.now();
-        _webextensionPolyfill2.default.bookmarks.update(cur.id, { title: `${cur.title}[${archivedDate}]` });
+        _webextensionPolyfill2.default.bookmarks.update(cur.id, {
+          title: `${cur.title}[${archivedDate}]`
+        });
       }
     });
   });

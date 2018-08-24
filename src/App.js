@@ -7,53 +7,57 @@ import { toggle } from './background';
 import Stats from './Stats';
 
 class App extends React.Component {
-
   state = {
     activeTab: null,
     valid: null,
-    isQueued: false, 
+    isQueued: false,
     isArchived: false,
     nextUrl: null,
     items: null,
-  }
+  };
 
-   componentDidMount = async () => {
-    this.setState({ 
-       ...await getUrlStatus(),
-       items: await getAll()
+  componentDidMount = async () => {
+    this.setState({
+      ...(await getUrlStatus()),
+      items: await getAll(),
     });
-  }
+  };
 
   handleToggle = async () => {
-    if(this.state.valid) {
+    if (this.state.valid) {
       await toggle(this.state.activeTab);
       this.setState({
-        ...await getUrlStatus(),
-        items: await getAll()
-      })
+        ...(await getUrlStatus()),
+        items: await getAll(),
+      });
     }
-  }
+  };
 
   handleNext = () => {
     const { nextUrl: url } = this.state;
-    browser.tabs.update(null, {url})
-    window.close()
-  }
+    browser.tabs.update(null, { url });
+    window.close();
+  };
 
-  
   render() {
     const { valid, isQueued, isArchived, nextUrl, items } = this.state;
     return (
       <div>
-        <Buttons toggle={this.handleToggle} valid={valid} isQueued={isQueued} isArchived={isArchived}/>
-        { nextUrl && (
-          <button onClick={this.handleNext} className="buttonNext">Open next</button>
+        <Buttons
+          toggle={this.handleToggle}
+          valid={valid}
+          isQueued={isQueued}
+          isArchived={isArchived}
+        />
+        {nextUrl && (
+          <button onClick={this.handleNext} className="buttonNext">
+            Open next
+          </button>
         )}
         <Stats items={items} />
       </div>
     );
-
   }
-} 
+}
 
-ReactDOM.render(<App/>, document.getElementById('app'));
+ReactDOM.render(<App />, document.getElementById('app'));

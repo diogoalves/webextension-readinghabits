@@ -8556,7 +8556,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
-  var supportedProtocols = ["https:", "http:", "ftp:", "file:"];
+  var supportedProtocols = ['https:', 'http:', 'ftp:', 'file:'];
   var url = document.createElement('a');
   url.href = urlString;
   return supportedProtocols.indexOf(url.protocol) != -1;
@@ -8564,7 +8564,10 @@ const isSupportedProtocol = exports.isSupportedProtocol = urlString => {
 
 const getActiveTab = exports.getActiveTab = (() => {
   var _ref = _asyncToGenerator(function* () {
-    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
+    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({
+      active: true,
+      currentWindow: true
+    });
     if (activeTab && isSupportedProtocol(activeTab.url)) {
       return activeTab;
     } else {
@@ -8702,7 +8705,7 @@ const convertDate = exports.convertDate = date => {
   var mmChars = mm.split('');
   var ddChars = dd.split('');
 
-  return yyyy + '-' + (mmChars[1] ? mm : "0" + mmChars[0]) + '-' + (ddChars[1] ? dd : "0" + ddChars[0]);
+  return yyyy + '-' + (mmChars[1] ? mm : '0' + mmChars[0]) + '-' + (ddChars[1] ? dd : '0' + ddChars[0]);
 };
 
 const getIcon = exports.getIcon = (foundBookmark, foundArchived, tabId) => {
@@ -8723,9 +8726,11 @@ const fixArchivedWithoutTime = exports.fixArchivedWithoutTime = (() => {
   var _ref9 = _asyncToGenerator(function* (archivedId) {
     const archived = yield getItems(archivedId);
     archived.map(function (cur) {
-      if (!cur.title.endsWith("]")) {
+      if (!cur.title.endsWith(']')) {
         const archivedDate = Date.now();
-        _webextensionPolyfill2.default.bookmarks.update(cur.id, { title: `${cur.title}[${archivedDate}]` });
+        _webextensionPolyfill2.default.bookmarks.update(cur.id, {
+          title: `${cur.title}[${archivedDate}]`
+        });
       }
     });
   });
@@ -12450,13 +12455,20 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-const xxx = "asd";
+const xxx = 'asd';
 
 const update = (() => {
   var _ref = _asyncToGenerator(function* () {
-    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({ active: true, currentWindow: true });
-    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
-    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
+    const [activeTab] = yield _webextensionPolyfill2.default.tabs.query({
+      active: true,
+      currentWindow: true
+    });
+    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({
+      title: _constants.QUEUE_FOLDER_NAME
+    });
+    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({
+      title: _constants.ARCHIVE_FOLDER_NAME
+    });
     const { length: queuedItemsQuantity } = yield (0, _util.getItems)(queueFolderId);
     if (queuedItemsQuantity > 0) {
       _webextensionPolyfill2.default.browserAction.setBadgeText({ text: `${queuedItemsQuantity}` });
@@ -12482,19 +12494,31 @@ const update = (() => {
 
 const toggle = exports.toggle = (() => {
   var _ref2 = _asyncToGenerator(function* (tab) {
-    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.QUEUE_FOLDER_NAME });
-    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({ title: _constants.ARCHIVE_FOLDER_NAME });
+    const [{ id: queueFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({
+      title: _constants.QUEUE_FOLDER_NAME
+    });
+    const [{ id: archiveFolderId }] = yield _webextensionPolyfill2.default.bookmarks.search({
+      title: _constants.ARCHIVE_FOLDER_NAME
+    });
     if (queueFolderId && archiveFolderId) {
       const foundBookmark = yield (0, _util.find)(queueFolderId, tab.url);
       const foundArchive = yield (0, _util.find)(archiveFolderId, tab.url);
 
       if (foundBookmark && !foundArchive) {
-        yield _webextensionPolyfill2.default.bookmarks.move(foundBookmark.id, { parentId: archiveFolderId });
+        yield _webextensionPolyfill2.default.bookmarks.move(foundBookmark.id, {
+          parentId: archiveFolderId
+        });
       } else if (foundBookmark && foundArchive) yield _webextensionPolyfill2.default.bookmarks.remove(foundBookmark.id);else if (!foundBookmark && foundArchive) {
         const cleanedTitle = foundArchive.title.substring(0, foundArchive.title.length - 15);
         yield _webextensionPolyfill2.default.bookmarks.update(foundArchive.id, { title: cleanedTitle });
-        yield _webextensionPolyfill2.default.bookmarks.move(foundArchive.id, { parentId: queueFolderId });
-      } else if (!foundBookmark && !foundArchive) yield _webextensionPolyfill2.default.bookmarks.create({ parentId: queueFolderId, title: tab.title, url: tab.url });
+        yield _webextensionPolyfill2.default.bookmarks.move(foundArchive.id, {
+          parentId: queueFolderId
+        });
+      } else if (!foundBookmark && !foundArchive) yield _webextensionPolyfill2.default.bookmarks.create({
+        parentId: queueFolderId,
+        title: tab.title,
+        url: tab.url
+      });
     }
   });
 
@@ -28121,7 +28145,12 @@ class App extends _react2.default.Component {
     return _react2.default.createElement(
       'div',
       null,
-      _react2.default.createElement(_Buttons2.default, { toggle: this.handleToggle, valid: valid, isQueued: isQueued, isArchived: isArchived }),
+      _react2.default.createElement(_Buttons2.default, {
+        toggle: this.handleToggle,
+        valid: valid,
+        isQueued: isQueued,
+        isArchived: isArchived
+      }),
       nextUrl && _react2.default.createElement(
         'button',
         { onClick: this.handleNext, className: 'buttonNext' },
@@ -28706,7 +28735,6 @@ var _react2 = _interopRequireDefault(_react);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Buttons extends _react.Component {
-
   render() {
     if (!this.props.valid) return null;
     const { isQueued, isArchived, toggle } = this.props;
@@ -28770,7 +28798,7 @@ var _AccessTime = __webpack_require__(406);
 
 var _AccessTime2 = _interopRequireDefault(_AccessTime);
 
-var _ChartAccumulated = __webpack_require__(794);
+var _ChartAccumulated = __webpack_require__(407);
 
 var _ChartAccumulated2 = _interopRequireDefault(_ChartAccumulated);
 
@@ -28828,18 +28856,13 @@ class Stats extends _react.Component {
       !isNaN(avgTimeToArchive) && _react2.default.createElement(
         'small',
         null,
-        ' ',
-        'Average time to archive: ',
+        ' Average time to archive: ',
         avgTimeToArchive,
         ' hours.'
       ),
       _react2.default.createElement(
         _BottomNavigation2.default,
-        {
-          value: value,
-          onChange: this.handleChange,
-          showLabels: true
-        },
+        { value: value, onChange: this.handleChange, showLabels: true },
         _react2.default.createElement(_BottomNavigationAction2.default, { label: 'trends', icon: _react2.default.createElement(_Timeline2.default, null) }),
         _react2.default.createElement(_BottomNavigationAction2.default, { label: 'by day', icon: _react2.default.createElement(_Today2.default, null) }),
         _react2.default.createElement(_BottomNavigationAction2.default, { label: 'by time', icon: _react2.default.createElement(_AccessTime2.default, null) })
@@ -35904,7 +35927,109 @@ var _default = (0, _createSvgIcon.default)(_react.default.createElement(_react.d
 exports.default = _default;
 
 /***/ }),
-/* 407 */,
+/* 407 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _react = __webpack_require__(0);
+
+var _react2 = _interopRequireDefault(_react);
+
+var _recharts = __webpack_require__(124);
+
+var _util = __webpack_require__(55);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+class ChartAccumulated extends _react.Component {
+  constructor(...args) {
+    var _temp;
+
+    return _temp = super(...args), this.process = items => {
+      const { queued, archived } = items;
+      const step1 = queued.reduce((acc, cur) => {
+        const key = (0, _util.convertDate)(new Date(cur.dateAdded));
+        acc[key] = {
+          date: key,
+          queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,
+          accumulated: acc[key] && acc[key].accumulated ? acc[key].accumulated + 1 : 1,
+          archived: 0
+        };
+        return acc;
+      }, {});
+      const step2 = archived.reduce((acc, cur) => {
+        const key = (0, _util.convertDate)(new Date(cur.dateAdded));
+        const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
+        const keyArchived = (0, _util.convertDate)(new Date(parseInt(archivedTimeStamp, 10)));
+        acc[key] = {
+          date: key,
+          queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,
+          accumulated: acc[key] && acc[key].accumulated ? acc[key].accumulated : 0,
+          archived: acc[key] && acc[key].archived ? acc[key].archived : 0
+        };
+        acc[keyArchived] = {
+          date: keyArchived,
+          queued: acc[keyArchived] && acc[keyArchived].queued ? acc[keyArchived].queued : 0,
+          accumulated: acc[keyArchived] && acc[keyArchived].accumulated ? acc[keyArchived].accumulated : 0,
+          archived: acc[keyArchived] && acc[keyArchived].archived ? acc[keyArchived].archived + 1 : 1
+        };
+        return acc;
+      }, step1);
+      const step3 = Object.values(step2);
+      const step4 = step3.sort((a, b) => {
+        if (a.date > b.date) return 1;
+        if (a.date < b.date) return -1;
+        return 0;
+      });
+      const step5 = step4.reduce((acc, cur, index) => {
+        if (acc[index - 1]) {
+          return acc.concat(_extends({}, cur, {
+            accumulated: cur.accumulated + acc[index - 1].accumulated
+          }));
+        } else {
+          return acc.concat(cur);
+        }
+      }, []);
+      return step5;
+    }, _temp;
+  }
+
+  render() {
+    if (!this.props.items) return null;
+    const data = this.process(this.props.items);
+    return _react2.default.createElement(
+      _recharts.ComposedChart,
+      {
+        width: 350,
+        height: 200,
+        data: data,
+        margin: { top: 20, right: 5, bottom: 20, left: 5 }
+      },
+      _react2.default.createElement(_recharts.CartesianGrid, { stroke: '#f5f5f5' }),
+      _react2.default.createElement(_recharts.Tooltip, null),
+      _react2.default.createElement(_recharts.Area, {
+        type: 'monotone',
+        dataKey: 'accumulated',
+        fill: '#c7b9e2',
+        stroke: '#c7b9e2'
+      }),
+      _react2.default.createElement(_recharts.Bar, { dataKey: 'queued', barSize: 4, fill: 'rgb(73, 127, 243)' }),
+      _react2.default.createElement(_recharts.Bar, { dataKey: 'archived', barSize: 4, fill: 'rgb(243, 79, 73)' })
+    );
+  }
+}
+
+exports.default = ChartAccumulated;
+
+/***/ }),
 /* 408 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -53722,7 +53847,12 @@ class ChartByDay extends _react.Component {
 
     return _react2.default.createElement(
       _recharts.ComposedChart,
-      { width: 350, height: 200, data: data, margin: { top: 20, right: 5, bottom: 20, left: 5 } },
+      {
+        width: 350,
+        height: 200,
+        data: data,
+        margin: { top: 20, right: 5, bottom: 20, left: 5 }
+      },
       _react2.default.createElement(_recharts.CartesianGrid, { stroke: '#f5f5f5' }),
       _react2.default.createElement(_recharts.Tooltip, null),
       _react2.default.createElement(_recharts.Bar, { dataKey: 'queued', barSize: 4, fill: 'rgb(73, 127, 243)' }),
@@ -53796,7 +53926,12 @@ class ChartByHour extends _react.Component {
 
     return _react2.default.createElement(
       _recharts.ComposedChart,
-      { width: 350, height: 200, data: data, margin: { top: 20, right: 5, bottom: 20, left: 5 } },
+      {
+        width: 350,
+        height: 200,
+        data: data,
+        margin: { top: 20, right: 5, bottom: 20, left: 5 }
+      },
       _react2.default.createElement(_recharts.CartesianGrid, { stroke: '#f5f5f5' }),
       _react2.default.createElement(_recharts.Tooltip, null),
       _react2.default.createElement(_recharts.Bar, { dataKey: 'queued', barSize: 4, fill: 'rgb(73, 127, 243)' }),
@@ -53807,100 +53942,6 @@ class ChartByHour extends _react.Component {
 }
 
 exports.default = ChartByHour;
-
-/***/ }),
-/* 793 */,
-/* 794 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _react = __webpack_require__(0);
-
-var _react2 = _interopRequireDefault(_react);
-
-var _recharts = __webpack_require__(124);
-
-var _util = __webpack_require__(55);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-class ChartAccumulated extends _react.Component {
-  constructor(...args) {
-    var _temp;
-
-    return _temp = super(...args), this.process = items => {
-      const { queued, archived } = items;
-      const step1 = queued.reduce((acc, cur) => {
-        const key = (0, _util.convertDate)(new Date(cur.dateAdded));
-        acc[key] = {
-          date: key,
-          queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,
-          accumulated: acc[key] && acc[key].accumulated ? acc[key].accumulated + 1 : 1,
-          archived: 0
-        };
-        return acc;
-      }, {});
-      const step2 = archived.reduce((acc, cur) => {
-        const key = (0, _util.convertDate)(new Date(cur.dateAdded));
-        const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
-        const keyArchived = (0, _util.convertDate)(new Date(parseInt(archivedTimeStamp, 10)));
-        acc[key] = {
-          date: key,
-          queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,
-          accumulated: acc[key] && acc[key].accumulated ? acc[key].accumulated : 0,
-          archived: acc[key] && acc[key].archived ? acc[key].archived : 0
-        };
-        acc[keyArchived] = {
-          date: keyArchived,
-          queued: acc[keyArchived] && acc[keyArchived].queued ? acc[keyArchived].queued : 0,
-          accumulated: acc[keyArchived] && acc[keyArchived].accumulated ? acc[keyArchived].accumulated : 0,
-          archived: acc[keyArchived] && acc[keyArchived].archived ? acc[keyArchived].archived + 1 : 1
-        };
-        return acc;
-      }, step1);
-      const step3 = Object.values(step2);
-      const step4 = step3.sort((a, b) => {
-        if (a.date > b.date) return 1;
-        if (a.date < b.date) return -1;
-        return 0;
-      });
-      const step5 = step4.reduce((acc, cur, index) => {
-        if (acc[index - 1]) {
-          return acc.concat(_extends({}, cur, {
-            accumulated: cur.accumulated + acc[index - 1].accumulated
-          }));
-        } else {
-          return acc.concat(cur);
-        }
-      }, []);
-      return step5;
-    }, _temp;
-  }
-
-  render() {
-    if (!this.props.items) return null;
-    const data = this.process(this.props.items);
-    return _react2.default.createElement(
-      _recharts.ComposedChart,
-      { width: 350, height: 200, data: data, margin: { top: 20, right: 5, bottom: 20, left: 5 } },
-      _react2.default.createElement(_recharts.CartesianGrid, { stroke: '#f5f5f5' }),
-      _react2.default.createElement(_recharts.Tooltip, null),
-      _react2.default.createElement(_recharts.Area, { type: 'monotone', dataKey: 'accumulated', fill: '#c7b9e2', stroke: '#c7b9e2' }),
-      _react2.default.createElement(_recharts.Bar, { dataKey: 'queued', barSize: 4, fill: 'rgb(73, 127, 243)' }),
-      _react2.default.createElement(_recharts.Bar, { dataKey: 'archived', barSize: 4, fill: 'rgb(243, 79, 73)' })
-    );
-  }
-}
-
-exports.default = ChartAccumulated;
 
 /***/ })
 /******/ ]);
