@@ -4,6 +4,9 @@
 A webextension to help visualizing in browser reading habits.
 This code does not rely on any third party. The storage of the queued and archived items is performed in local bookmarks, which can eventually be synchronized using browser sync functionalities.
 
+### Demo
+[![Demo](https://img.youtube.com/vi/oGQ_rsQMVmY/0.jpg)](https://youtu.be/oGQ_rsQMVmY)
+
 ## Build and package
 You need [NodeJS](https://nodejs.org/en/), [npm](http://npmjs.com/) and [web-ext](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Getting_started_with_web-ext) ready environment. After that, change into project directory and install dependencies with:
 
