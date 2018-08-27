@@ -6,6 +6,8 @@ import { getUrlStatus, getAll } from './util';
 import { toggle } from './background';
 import Stats from './Stats';
 
+//TODO see it later, close tab after adding it
+//TODO next should push the first item in queue to last position
 class App extends React.Component {
   state = {
     activeTab: null,
