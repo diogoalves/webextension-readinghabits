@@ -7,6 +7,7 @@ import AccessTimeIcon from '@material-ui/icons/AccessTime';
 import ChartAccumulated from './ChartAccumulated';
 import ChartByDay from './ChartByDay';
 import ChartByHour from './ChartByHour';
+import { getArchivedTimestamp } from './util';
 
 class Stats extends Component {
   state = {
@@ -27,9 +28,16 @@ class Stats extends Component {
     const queuedToday = items.queued
       .concat(items.archived)
       .filter(e => new Date(e.dateAdded).toLocaleDateString() === today).length;
-    const archivedToday = items.archived.filter(
-      e => new Date(e.dateAdded).toLocaleDateString() === today
-    ).length;
+    const archivedToday = items.archived.reduce((acc, cur) => {
+      const timestamp = getArchivedTimestamp(cur.title);
+      const currDate = new Date(timestamp).toLocaleDateString();
+      if(currDate === today) {
+        return acc + 1;
+      } else {
+        return acc;
+      }
+    }, 0);
+    
     const avgTimeToArchive = getAvgTimeToArchive(items.archived);
 
     return (
@@ -59,13 +67,7 @@ const getAvgTimeToArchive = archived => {
   const qty = archived.length;
   const avg = archived.reduce((acc, cur) => {
     const createdAt = parseInt(cur.dateAdded, 10);
-    const archivedAt = parseInt(
-      cur.title
-        .substr(cur.title.length - 15)
-        .replace('[', '')
-        .replace(']', ''),
-      10
-    );
+    const archivedAt = getArchivedTimestamp(cur.title);
     return acc + (archivedAt - createdAt);
   }, 0);
   return Math.floor(avg / qty / 1000 / 60 / 60);
