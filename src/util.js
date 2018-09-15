@@ -135,3 +135,13 @@ export const fixArchivedWithoutTime = async archivedId => {
     }
   });
 };
+
+export const getArchivedTimestamp = title => {
+  return parseInt(
+    title
+      .substr(title.length - 15)
+      .replace('[', '')
+      .replace(']', ''),
+    10
+  );
+}

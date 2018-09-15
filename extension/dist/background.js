@@ -1395,7 +1395,7 @@ const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fixArchivedWithoutTime = exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getAll = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+exports.getArchivedTimestamp = exports.fixArchivedWithoutTime = exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getAll = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
 var _webextensionPolyfill = __webpack_require__(43);
 
@@ -1591,6 +1591,10 @@ const fixArchivedWithoutTime = exports.fixArchivedWithoutTime = (() => {
     return _ref9.apply(this, arguments);
   };
 })();
+
+const getArchivedTimestamp = exports.getArchivedTimestamp = title => {
+  return parseInt(title.substr(title.length - 15).replace('[', '').replace(']', ''), 10);
+};
 
 /***/ })
 

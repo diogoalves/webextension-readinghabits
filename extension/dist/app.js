@@ -8543,7 +8543,7 @@ const ARCHIVE_FOLDER_NAME = exports.ARCHIVE_FOLDER_NAME = 'ARCHIVED';
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.fixArchivedWithoutTime = exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getAll = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
+exports.getArchivedTimestamp = exports.fixArchivedWithoutTime = exports.getIcon = exports.convertDate = exports.getUrlStatus = exports.find = exports.getAll = exports.getItems = exports.getFoldersIds = exports.getFolderId = exports.getValidTabs = exports.getActiveTab = exports.isSupportedProtocol = undefined;
 
 var _webextensionPolyfill = __webpack_require__(43);
 
@@ -8739,6 +8739,10 @@ const fixArchivedWithoutTime = exports.fixArchivedWithoutTime = (() => {
     return _ref9.apply(this, arguments);
   };
 })();
+
+const getArchivedTimestamp = exports.getArchivedTimestamp = title => {
+  return parseInt(title.substr(title.length - 15).replace('[', '').replace(']', ''), 10);
+};
 
 /***/ }),
 /* 56 */
@@ -28111,6 +28115,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
+//TODO see it later, close tab after adding it
+//TODO next should push the first item in queue to last position
 class App extends _react2.default.Component {
   constructor(...args) {
     var _temp, _this;
@@ -28810,6 +28816,8 @@ var _ChartByHour = __webpack_require__(792);
 
 var _ChartByHour2 = _interopRequireDefault(_ChartByHour);
 
+var _util = __webpack_require__(55);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 class Stats extends _react.Component {
@@ -28831,7 +28839,16 @@ class Stats extends _react.Component {
     const totalQueued = items.queued.length + items.archived.length;
     const totalArchived = items.archived.length;
     const queuedToday = items.queued.concat(items.archived).filter(e => new Date(e.dateAdded).toLocaleDateString() === today).length;
-    const archivedToday = items.archived.filter(e => new Date(e.dateAdded).toLocaleDateString() === today).length;
+    const archivedToday = items.archived.reduce((acc, cur) => {
+      const timestamp = (0, _util.getArchivedTimestamp)(cur.title);
+      const currDate = new Date(timestamp).toLocaleDateString();
+      if (currDate === today) {
+        return acc + 1;
+      } else {
+        return acc;
+      }
+    }, 0);
+
     const avgTimeToArchive = getAvgTimeToArchive(items.archived);
 
     return _react2.default.createElement(
@@ -28875,7 +28892,7 @@ const getAvgTimeToArchive = archived => {
   const qty = archived.length;
   const avg = archived.reduce((acc, cur) => {
     const createdAt = parseInt(cur.dateAdded, 10);
-    const archivedAt = parseInt(cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', ''), 10);
+    const archivedAt = (0, _util.getArchivedTimestamp)(cur.title);
     return acc + (archivedAt - createdAt);
   }, 0);
   return Math.floor(avg / qty / 1000 / 60 / 60);
@@ -35967,8 +35984,8 @@ class ChartAccumulated extends _react.Component {
       }, {});
       const step2 = archived.reduce((acc, cur) => {
         const key = (0, _util.convertDate)(new Date(cur.dateAdded));
-        const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
-        const keyArchived = (0, _util.convertDate)(new Date(parseInt(archivedTimeStamp, 10)));
+        const archivedTimestamp = (0, _util.getArchivedTimestamp)(cur.title);
+        const keyArchived = (0, _util.convertDate)(new Date(archivedTimestamp));
         acc[key] = {
           date: key,
           queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,
@@ -53811,6 +53828,8 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
+var _util = __webpack_require__(55);
+
 var _recharts = __webpack_require__(124);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -53830,8 +53849,8 @@ class ChartByDay extends _react.Component {
         return acc;
       }, step0);
       const step2 = archived.reduce((acc, cur) => {
-        const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
-        const key = new Date(parseInt(archivedTimeStamp, 10)).getDay();
+        const archivedTimestamp = (0, _util.getArchivedTimestamp)(cur.title);
+        const key = new Date(archivedTimestamp).getDay();
         acc[key] = _extends({}, acc[key], {
           archived: acc[key].archived + 1
         });
@@ -53881,6 +53900,8 @@ var _react = __webpack_require__(0);
 
 var _react2 = _interopRequireDefault(_react);
 
+var _util = __webpack_require__(55);
+
 var _recharts = __webpack_require__(124);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -53909,8 +53930,8 @@ class ChartByHour extends _react.Component {
         return acc;
       }, step0);
       const step2 = archived.reduce((acc, cur) => {
-        const archivedTimeStamp = cur.title.substr(cur.title.length - 15).replace('[', '').replace(']', '');
-        const key = getKey(parseInt(archivedTimeStamp, 10));
+        const archivedTimestamp = (0, _util.getArchivedTimestamp)(cur.title);
+        const key = getKey(archivedTimestamp);
         acc[key] = _extends({}, acc[key], {
           archived: acc[key].archived + 1
         });

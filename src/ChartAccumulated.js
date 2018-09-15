@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { ComposedChart, Area, Bar, CartesianGrid, Tooltip } from 'recharts';
-import { convertDate } from './util';
+import { convertDate, getArchivedTimestamp } from './util';
 
 class ChartAccumulated extends Component {
   process = items => {
@@ -18,13 +18,8 @@ class ChartAccumulated extends Component {
     }, {});
     const step2 = archived.reduce((acc, cur) => {
       const key = convertDate(new Date(cur.dateAdded));
-      const archivedTimeStamp = cur.title
-        .substr(cur.title.length - 15)
-        .replace('[', '')
-        .replace(']', '');
-      const keyArchived = convertDate(
-        new Date(parseInt(archivedTimeStamp, 10))
-      );
+      const archivedTimestamp = getArchivedTimestamp(cur.title);
+      const keyArchived = convertDate(new Date(archivedTimestamp));
       acc[key] = {
         date: key,
         queued: acc[key] && acc[key].queued ? acc[key].queued + 1 : 1,

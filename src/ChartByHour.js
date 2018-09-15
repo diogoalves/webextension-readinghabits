@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
+import { getArchivedTimestamp } from './util';
 import {
   ComposedChart,
-  Area,
   Bar,
   XAxis,
-  YAxis,
   CartesianGrid,
   Tooltip,
 } from 'recharts';
@@ -36,11 +35,8 @@ class ChartByHour extends Component {
       return acc;
     }, step0);
     const step2 = archived.reduce((acc, cur) => {
-      const archivedTimeStamp = cur.title
-        .substr(cur.title.length - 15)
-        .replace('[', '')
-        .replace(']', '');
-      const key = getKey(parseInt(archivedTimeStamp, 10));
+      const archivedTimestamp = getArchivedTimestamp(cur.title);
+      const key = getKey(archivedTimestamp);
       acc[key] = {
         ...acc[key],
         archived: acc[key].archived + 1,
