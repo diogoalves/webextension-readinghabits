@@ -37,10 +37,12 @@ class ChartByHour extends Component {
     const step2 = archived.reduce((acc, cur) => {
       const archivedTimestamp = getArchivedTimestamp(cur.title);
       const key = getKey(archivedTimestamp);
-      acc[key] = {
-        ...acc[key],
-        archived: acc[key].archived + 1,
-      };
+      if (acc[key]) {
+        acc[key] = {
+          ...acc[key],
+          archived: (acc[key].archived || 0) + 1,
+        };
+      }
       return acc;
     }, step1);
     return step2;

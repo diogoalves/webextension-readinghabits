@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { ComposedChart, Area, Bar, CartesianGrid, Tooltip } from 'recharts';
+import { ComposedChart, Area, Bar, CartesianGrid, Tooltip, Line } from 'recharts';
 import { convertDate, getArchivedTimestamp } from './util';
 
 class ChartAccumulated extends Component {

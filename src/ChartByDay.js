@@ -25,16 +25,20 @@ class ChartByDay extends Component {
       acc[key] = {
         ...acc[key],
         queued: acc[key].queued + 1,
+        archived: 0
       };
       return acc;
     }, step0);
     const step2 = archived.reduce((acc, cur) => {
       const archivedTimestamp = getArchivedTimestamp(cur.title);
       const key = new Date(archivedTimestamp).getDay();
-      acc[key] = {
-        ...acc[key],
-        archived: acc[key].archived + 1,
-      };
+      if (acc[key]) {
+        const nextValue = (acc[key].archived || 0) + 1;
+        acc[key] = {
+          ...acc[key],
+          archived: nextValue,
+        };
+      }
       return acc;
     }, step1);
     return step2;
