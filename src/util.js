@@ -145,3 +145,23 @@ export const getArchivedTimestamp = title => {
     10
   );
 }
+
+export const getDayWeekKey = title => {
+  let ret = 0;
+  const timeStamp = parseInt(
+    title
+      .substr(title.length - 15)
+      .replace('[', '')
+      .replace(']', ''),
+    10
+  );
+
+  return ret;
+  return parseInt(
+    title
+      .substr(title.length - 15)
+      .replace('[', '')
+      .replace(']', ''),
+    10
+  );
+}
