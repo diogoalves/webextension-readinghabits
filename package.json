@@ -16,7 +16,7 @@
     "babel-preset-env": "1.6.1",
     "babel-preset-react": "6.24.1",
     "babel-preset-stage-2": "6.24.1",
-    "react": "16.2.0",
+    "react": "16.12.0",
     "react-dom": "16.12.0",
     "web-ext": "3.2.1",
     "webextension-polyfill": "0.3.0",
@@ -24,8 +24,8 @@
     "webpack-cli": "3.3.10"
   },
   "dependencies": {
-    "@material-ui/core": "1.5.1",
-    "@material-ui/icons": "2.0.3",
-    "recharts": "1.1.0"
+    "@material-ui/core": "4.8.0",
+    "@material-ui/icons": "4.5.1",
+    "recharts": "1.8.5"
   }
 }
