@@ -22,6 +22,7 @@ class App extends React.Component {
     this.setState({
       ...(await getUrlStatus()),
       items: await getAll(),
+      processedItems : 23
     });
   };
 
@@ -42,7 +43,7 @@ class App extends React.Component {
   };
 
   render() {
-    const { valid, isQueued, isArchived, nextUrl, items } = this.state;
+    const { valid, isQueued, isArchived, nextUrl, items, processedItems } = this.state;
     return (
       <div>
         <Buttons
@@ -57,6 +58,8 @@ class App extends React.Component {
           </button>
         )}
         <Stats items={items} />
+        <h1>asd{processedItems}</h1>
+
       </div>
     );
   }

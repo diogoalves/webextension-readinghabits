@@ -4,7 +4,7 @@
 A webextension to help visualizing in browser reading habits.
 This code does not rely on any third party. The storage of the queued and archived items is performed in local bookmarks, which can eventually be synchronized using browser sync functionalities.
 
-### Demo
+### Demo (click to play)
 [![Demo](https://img.youtube.com/vi/oGQ_rsQMVmY/0.jpg)](https://youtu.be/oGQ_rsQMVmY)
 
 ## Build and package
